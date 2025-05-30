@@ -91,7 +91,6 @@ exclude_docs: |
   source_installation_inst.md
   ort_genai_igpu.md
   llamacpp.md
-  /nda/
 
 # The following adds icons on the bottom of the page
 extra:
@@ -100,7 +99,7 @@ extra:
     - icon: simple/youtube
       link: https://www.youtube.com/@AMDDevCentral
     - icon: simple/github
-      link: https://www.github.com/onnx/turnkeyml
+      link: https://github.com/lemonade-sdk/lemonade
 
 copyright: Copyright &copy; 2025 AMD. All rights reserved.
 
