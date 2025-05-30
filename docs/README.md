@@ -13,6 +13,8 @@ The Lemonade SDK provides everything needed to get up and running quickly with L
 | **🐍 Python API based on `from_pretrained()`**                          | Provides easy integration with Python applications for loading and using LLMs.                      |
 
 
+<div class="hide-in-mkdocs">
+
 ## Table of Contents
 
 - [Installation](#installation)
@@ -30,9 +32,9 @@ The Lemonade SDK provides everything needed to get up and running quickly with L
   - [High-Level APIs](#high-level-apis)
   - [Low-Level API](#low-level-api)
 - [Contributing](#contributing)
+</div>
 
-
-# Installation
+## Installation
 
 There are 3 ways a user can install the Lemonade SDK:
 
@@ -41,13 +43,13 @@ There are 3 ways a user can install the Lemonade SDK:
 1. Use [source installation](#installing-from-source) if you plan to contribute or customize the Lemonade SDK.
 
 
-## Installing From Lemonade_Server_Installer.exe
+### Installing From Lemonade_Server_Installer.exe
 
 The Lemonade Server is available as a standalone tool with a one-click Windows installer `.exe`. Check out the [Lemonade Server getting started guide](server/README.md) for installation instructions and the [server spec](./server/server_spec.md) to learn more about the functionality.
 
 The Lemonade Server [featured apps](./server/apps/README.md) has guides for how to use Lemonade Server with a collection of applications that we have tested.
 
-## Installing From PyPI
+### Installing From PyPI
 
 To install the Lemonade SDK from PyPI:
 
@@ -82,12 +84,12 @@ To install the Lemonade SDK from PyPI:
 
 4. Use `lemonade -h` to explore the LLM tools, and see the [command](#cli-commands) and [API](#api) examples below.
 
-## Installing From Source
+### Installing From Source
 
 The Lemonade SDK can be installed from source code by cloning this repository and following the instructions [here](./source_installation_inst.md).
 
 
-# CLI Commands
+## CLI Commands
 
 The `lemonade` CLI uses a unique command syntax that enables convenient interoperability between models, frameworks, devices, accuracy tests, and deployment options.
 
@@ -106,7 +108,7 @@ Can be read like this:
 The `lemonade -h` command will show you which options and Tools are available, and `lemonade TOOL -h` will tell you more about that specific Tool.
 
 
-## Prompting
+### Prompting
 
 To prompt your LLM, try one of the following:
 
@@ -131,7 +133,7 @@ This typically results in the model returning a higher quality response.
 
 Run `lemonade huggingface-load -h` and `lemonade llm-prompt -h` to learn more about these tools.
 
-## Accuracy
+### Accuracy
 
 To measure the accuracy of an LLM using MMLU (Measuring Massive Multitask Language Understanding), try the following:
 
@@ -149,7 +151,7 @@ This command will run just the management test from MMLU on your LLM and save th
 
 You can run the full suite of MMLU subjects by omitting the `--test` argument. You can learn more about this with `lemonade accuracy-mmlu -h`.
 
-## Benchmarking
+### Benchmarking
 
 To measure the time-to-first-token and tokens/second of an LLM, try the following:
 
@@ -167,7 +169,7 @@ This command will run a few warm-up iterations, then a few generation iterations
 
 The prompt size, number of output tokens, and number iterations are all parameters. Learn more by running `lemonade oga-bench -h` or `lemonade huggingface-bench -h`.
 
-## LLM Report
+### LLM Report
 
 To see a report that contains all the benchmarking results and all the accuracy results, use the `report` tool with the `--perf` flag:
 ```bash
@@ -176,7 +178,7 @@ To see a report that contains all the benchmarking results and all the accuracy 
 
 The results can be filtered by model name, device type and data type.  See how by running `lemonade report -h`.
 
-## Memory Usage
+### Memory Usage
 
 The peak memory used by the Lemonade execution sequence is captured in the build output. To capture more granular
 memory usage information, use the `--memory` flag.  For example:
@@ -194,7 +196,7 @@ Hugging Face:
 This generates a PNG file that is stored in the current folder and the build folder.  This file
 contains a figure plotting the memory usage over the Lemonade tool sequence.  Learn more by running `lemonade -h`.
 
-## Serving
+### Serving
 
 You can launch an OpenAI-compatible server with:
 
@@ -204,11 +206,11 @@ You can launch an OpenAI-compatible server with:
 
 Visit the [server README](./server/README.md) to learn more about the server's capabilities.
 
-# API
+## API
 
 Lemonade is also available via API.
 
-## High-Level APIs
+### High-Level APIs
 
 The high-level Lemonade API abstracts loading models from any supported framework (e.g., Hugging Face, OGA) and backend (e.g., CPU, iGPU, Hybrid) using the popular `from_pretrained()` function. This makes it easy to integrate Lemonade LLMs into Python applications. For more information on recipes and compatibility, see the [Lemonade API ReadMe](./lemonade_api.md).
 
@@ -226,7 +228,7 @@ print(tokenizer.decode(response[0]))
 
 You can find examples for the high-level APIs [here](https://github.com/lemonade-sdk/lemonade/tree/main/examples).
 
-## Low-Level API
+### Low-Level API
 
 The low-level API is useful for designing custom experiments. For example, sweeping over specific checkpoints, devices, and/or tools.
 
@@ -245,7 +247,7 @@ state = pt.Prompt().run(state, prompt="hi", max_new_tokens=15)
 print("Response:", state.response)
 ```
 
-# Contributing
+## Contributing
 
 Contributions are welcome! If you decide to contribute, please:
 

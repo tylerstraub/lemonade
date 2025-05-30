@@ -62,22 +62,7 @@ class ModelManager:
         Returns a dictionary of locally available models that are enabled by
         the current installation.
         """
-        hybrid_installed = (
-            "onnxruntime-vitisai" in pkg_resources.working_set.by_key
-            and "onnxruntime-genai-directml-ryzenai" in pkg_resources.working_set.by_key
-        )
-
-        downloaded_models_enabled = {}
-        for model, value in self.downloaded_models.items():
-            if value["recipe"] == "oga-hybrid" and hybrid_installed:
-                downloaded_models_enabled[model] = value
-            else:
-                # All other models are CPU models right now
-                # This logic will get more sophisticated when we
-                # start to support more backends
-                downloaded_models_enabled[model] = value
-
-        return downloaded_models_enabled
+        return self.filter_models_by_backend(self.downloaded_models)
 
     def download_models(self, models: list[str]):
         """
@@ -92,6 +77,24 @@ class ModelManager:
             checkpoint = self.supported_models[model]["checkpoint"]
             print(f"Downloading {model} ({checkpoint})")
             huggingface_hub.snapshot_download(repo_id=checkpoint)
+
+    def filter_models_by_backend(self, models: dict) -> dict:
+        """
+        Returns a filtered dict of models that are enabled by the
+        current environment.
+        """
+        hybrid_installed = (
+            "onnxruntime-vitisai" in pkg_resources.working_set.by_key
+            and "onnxruntime-genai-directml-ryzenai" in pkg_resources.working_set.by_key
+        )
+        filtered = {}
+        for model, value in models.items():
+            if value.get("recipe") == "oga-hybrid":
+                if hybrid_installed:
+                    filtered[model] = value
+            else:
+                filtered[model] = value
+        return filtered
 
 
 # This file was originally licensed under Apache 2.0. It has been modified.

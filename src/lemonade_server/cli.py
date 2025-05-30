@@ -92,7 +92,7 @@ def pull(model_names: List[str]):
     if server_running:
         import requests
 
-        base_url = f"http://localhost:{port}/api/v0"
+        base_url = f"http://localhost:{port}/api/v1"
 
         for model_name in model_names:
             # Install the model
