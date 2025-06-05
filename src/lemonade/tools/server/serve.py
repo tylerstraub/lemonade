@@ -7,15 +7,16 @@ import logging
 import traceback
 from typing import Optional, Union
 import json
-from contextlib import asynccontextmanager
+import subprocess
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, status, Request
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
 import uvicorn
+from uvicorn.config import Config
+from uvicorn.server import Server as UvicornServer
 from transformers import TextIteratorStreamer, StoppingCriteria, StoppingCriteriaList
 from tabulate import tabulate
 
@@ -45,13 +46,19 @@ from openai.types.responses import (
 
 import lemonade.api as lemonade_api
 from lemonade_server.model_manager import ModelManager
+from lemonade_server.pydantic_models import (
+    DEFAULT_MAX_NEW_TOKENS,
+    LoadConfig,
+    CompletionRequest,
+    ChatCompletionRequest,
+    ResponsesRequest,
+    PullConfig,
+)
 from lemonade.tools.management_tools import ManagementTool
+import lemonade.tools.server.llamacpp as llamacpp
 from lemonade.tools.server.tool_calls import extract_tool_calls, get_tool_call_pattern
 from lemonade.tools.server.instructions import get_instructions_html
-
-# Set to a high number to allow for interesting experiences in real apps
-# Tests should use the max_new_tokens argument to set a lower value
-DEFAULT_MAX_NEW_TOKENS = 1500
+from lemonade.tools.server.port_utils import lifespan
 
 DEFAULT_PORT = 8000
 DEFAULT_LOG_LEVEL = "info"
@@ -107,82 +114,6 @@ class StopOnEvent(StoppingCriteria):
 
     def __call__(self, input_ids, scores, **kwargs):
         return self.stop_event.is_set()
-
-
-class PullConfig(BaseModel):
-    """
-    Configurating for installing a supported LLM.
-    """
-
-    model_name: str
-
-
-class LoadConfig(BaseModel):
-    """
-    Configuration for loading a language model.
-
-    Specifies the model checkpoint, generation parameters,
-    and hardware/framework configuration (recipe) for model loading.
-    """
-
-    model_name: Optional[str] = None
-    checkpoint: Optional[str] = None
-    max_new_tokens: int = DEFAULT_MAX_NEW_TOKENS
-    recipe: Optional[str] = None
-    # Indicates the maximum prompt length allowed for that specific
-    # checkpoint + recipe combination
-    max_prompt_length: Optional[int] = None
-    # Indicates whether the model is a reasoning model, like DeepSeek
-    reasoning: Optional[bool] = False
-
-
-class CompletionRequest(BaseModel):
-    """
-    Request model for text completion API endpoint.
-
-    Contains a prompt, a model identifier, and a streaming
-    flag to control response delivery.
-    """
-
-    prompt: str
-    model: str
-    echo: bool = False
-    stream: bool = False
-    logprobs: int | None = False
-    stop: list[str] | str | None = None
-    temperature: float | None = None
-    max_tokens: int | None = None
-
-
-class ChatCompletionRequest(BaseModel):
-    """
-    Request model for chat completion API endpoint.
-
-    Contains a list of chat messages, a model identifier,
-    and a streaming flag to control response delivery.
-    """
-
-    messages: list[dict]
-    model: str
-    stream: bool = False
-    logprobs: int | None = False
-    stop: list[str] | str | None = None
-    temperature: float | None = None
-    tools: list[dict] | None = None
-    max_tokens: int | None = None
-    max_completion_tokens: int | None = None
-
-
-class ResponsesRequest(BaseModel):
-    """
-    Request model for responses API endpoint.
-    """
-
-    input: list[dict] | str
-    model: str
-    max_output_tokens: int | None = None
-    temperature: float | None = None
-    stream: bool = False
 
 
 class Server(ManagementTool):
@@ -266,6 +197,12 @@ class Server(ManagementTool):
         # Add lock for load/unload operations
         self._load_lock = asyncio.Lock()
 
+        # Subprocess handle for llama_server.exe
+        self.llama_server_process: subprocess.Popen = None
+
+        # Telemetry instance for llama server
+        self.llama_telemetry = llamacpp.LlamaTelemetry()
+
     def setup_routes(self, api_prefixes: list[str]):
         for prefix in api_prefixes:
             # Custom routes
@@ -307,15 +244,22 @@ class Server(ManagementTool):
 
         return parser
 
-    def run(
+    def _setup_server_common(
         self,
-        # ManagementTool has a required cache_dir arg, but
-        # we always use the default cache directory
-        _=None,
-        port: int = DEFAULT_PORT,
-        log_level: str = DEFAULT_LOG_LEVEL,
+        port: int,
         truncate_inputs: bool = False,
+        log_level: str = DEFAULT_LOG_LEVEL,
+        threaded_mode: bool = False,
     ):
+        """
+        Common setup logic shared between run() and run_in_thread().
+
+        Args:
+            port: Port number for the server
+            truncate_inputs: Whether to truncate inputs if they exceed max length
+            log_level: Logging level to configure
+            threaded_mode: Whether this is being set up for threaded execution
+        """
         # Store truncation settings
         self.truncate_inputs = truncate_inputs
 
@@ -329,22 +273,27 @@ class Server(ManagementTool):
 
         logging.trace = trace
 
-        # Configure logging to match uvicorn's format
-        logging_level = getattr(logging, log_level.upper())
-        logging.basicConfig(
-            level=logging_level,
-            format="%(levelprefix)s %(message)s",
-            datefmt="%Y-%m-%d %H:%M:%S",
-        )
+        # Configure logging based on mode
+        if threaded_mode:
+            # Configure logging for warning level (to reduce noise in threaded execution)
+            logging.getLogger("uvicorn.error").setLevel(logging.WARNING)
+        else:
+            # Configure logging to match uvicorn's format
+            logging_level = getattr(logging, log_level.upper())
+            logging.basicConfig(
+                level=logging_level,
+                format="%(levelprefix)s %(message)s",
+                datefmt="%Y-%m-%d %H:%M:%S",
+            )
 
-        # Add uvicorn's log formatter
-        logging.root.handlers[0].formatter = uvicorn.logging.DefaultFormatter(
-            fmt="%(levelprefix)s %(message)s",
-            use_colors=True,
-        )
+            # Add uvicorn's log formatter
+            logging.root.handlers[0].formatter = uvicorn.logging.DefaultFormatter(
+                fmt="%(levelprefix)s %(message)s",
+                use_colors=True,
+            )
 
-        # Ensure the log level is properly set
-        logging.getLogger().setLevel(logging_level)
+            # Ensure the log level is properly set
+            logging.getLogger().setLevel(logging_level)
 
         # Update debug logging state after setting log level
         self.debug_logging_enabled = logging.getLogger().isEnabledFor(logging.DEBUG)
@@ -357,7 +306,61 @@ class Server(ManagementTool):
         # that the lifespan can access it
         self.app.port = port
 
+    def run(
+        self,
+        # ManagementTool has a required cache_dir arg, but
+        # we always use the default cache directory
+        _=None,
+        port: int = DEFAULT_PORT,
+        log_level: str = DEFAULT_LOG_LEVEL,
+        truncate_inputs: bool = False,
+    ):
+        # Common setup
+        self._setup_server_common(
+            port=port,
+            truncate_inputs=truncate_inputs,
+            log_level=log_level,
+            threaded_mode=False,
+        )
+
         uvicorn.run(self.app, host="localhost", port=port, log_level=log_level)
+
+    def run_in_thread(
+        self,
+        port: int = DEFAULT_PORT,
+        host: str = "localhost",
+        log_level: str = "warning",
+        truncate_inputs: bool = False,
+    ):
+        """
+        Set up the server for running in a thread.
+        Returns a uvicorn server instance that can be controlled externally.
+        """
+        # Common setup
+        self._setup_server_common(
+            port=port,
+            truncate_inputs=truncate_inputs,
+            log_level=log_level,
+            threaded_mode=True,
+        )
+
+        class CustomServer(UvicornServer):
+            """Custom Uvicorn server that can be properly shutdown from another thread"""
+
+            def install_signal_handlers(self):
+                pass
+
+        # Configure the server
+        config = Config(
+            app=self.app,
+            host=host,
+            port=port,
+            log_level=log_level,
+            log_config=None,
+        )
+
+        # Create and return the uvicorn server
+        return CustomServer(config=config)
 
     async def _show_telemetry(self):
         """
@@ -537,6 +540,11 @@ class Server(ManagementTool):
 
         # Load the model if it's different from the currently loaded one
         await self.load_llm(lc, internal_call=True)
+
+        if self.llm_loaded.recipe == "llamacpp":
+            return llamacpp.chat_completion(
+                chat_completion_request, self.llama_telemetry
+            )
 
         # Convert chat messages to text using the model's chat template
         text = self.apply_chat_template(
@@ -1067,6 +1075,11 @@ class Server(ManagementTool):
         """
         Send performance statistics to the client.
         """
+        # If using llama server, get telemetry from the telemetry instance
+        if self.llm_loaded and self.llm_loaded.recipe == "llamacpp":
+            return self.llama_telemetry.get_telemetry_data()
+
+        # For built-in server, use the existing telemetry
         return {
             "time_to_first_token": self.time_to_first_token,
             "tokens_per_second": self.tokens_per_second,
@@ -1187,7 +1200,7 @@ class Server(ManagementTool):
             # We will populate a LoadConfig that has all of the required fields
             config_to_use: LoadConfig
 
-            # First, validate that the arguments are valid
+            # First, ensure that the arguments are valid
             if config.model_name:
                 # Get the dictionary of supported model from disk
                 supported_models = ModelManager().supported_models
@@ -1278,15 +1291,25 @@ class Server(ManagementTool):
 
             logging.info(f"Loading llm: {model_reference}")
             try:
-                self.model, self.tokenizer = lemonade_api.from_pretrained(
-                    checkpoint=config_to_use.checkpoint, recipe=config_to_use.recipe
-                )
+                if config_to_use.recipe == "llamacpp":
+                    self.llama_server_process = llamacpp.server_load(
+                        model_config=config_to_use,
+                        model_reference=model_reference,
+                        telemetry=self.llama_telemetry,
+                    )
+
+                else:
+                    self.model, self.tokenizer = lemonade_api.from_pretrained(
+                        checkpoint=config_to_use.checkpoint, recipe=config_to_use.recipe
+                    )
                 self.llm_loaded = config_to_use
 
                 return {
                     "status": "success",
                     "message": f"Loaded model: {model_reference}",
                 }
+            except HTTPException:
+                raise
             except Exception:  # pylint: disable=broad-exception-caught
                 self.model_load_failure(model_reference)
 
@@ -1310,6 +1333,9 @@ class Server(ManagementTool):
                 # Acquire all generate locks
                 for _ in range(self.max_concurrent_generations):
                     await self._generate_semaphore.acquire()
+
+            if self.llm_loaded.recipe == "llamacpp":
+                self.llama_server_process.terminate()
 
             self.llm_loaded = None
             self.tokenizer = None
