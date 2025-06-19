@@ -342,6 +342,52 @@
   
   
     <li class="md-nav__item">
+      <a href="../apps/open-webui/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Open WebUI
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../apps/ai-dev-gallery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    AI Dev Gallery
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../apps/ai-toolkit/" class="md-nav__link">
         
   
@@ -604,6 +650,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#model-management-gui" class="md-nav__link">
+    <span class="md-ellipsis">
+      Model Management GUI
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#naming-convention" class="md-nav__link">
     <span class="md-ellipsis">
       Naming Convention
@@ -773,6 +828,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#model-management-gui" class="md-nav__link">
+    <span class="md-ellipsis">
+      Model Management GUI
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#naming-convention" class="md-nav__link">
     <span class="md-ellipsis">
       Naming Convention
@@ -862,6 +926,8 @@
 
 <h1 id="lemonade-server-models">🍋 Lemonade Server Models</h1>
 <p>This document provides the models we recommend for use with Lemonade Server. Click on any model to learn more details about it, such as the <a href="https://github.com/lemonade-sdk/lemonade/blob/main/docs/lemonade_api.md">Lemonade Recipe</a> used to load the model.</p>
+<h2 id="model-management-gui">Model Management GUI</h2>
+<p>Lemonade Server offers a model management GUI to help you see which models are available, install new models, and delete models. You can access this GUI by starting Lemonade Server, opening <a href="http://localhost:8000">http://localhost:8000</a> in your web browser, and clicking the Model Management tab.</p>
 <h2 id="naming-convention">Naming Convention</h2>
 <p>The format of each Lemonade name is a combination of the name in the base checkpoint and the backend where the model will run. So, if the base checkpoint is <code>meta-llama/Llama-3.2-1B-Instruct</code>, and it has been optimized to run on Hybrid, the resulting name is <code>Llama-3.2-3B-Instruct-Hybrid</code>.</p>
 <h2 id="model-storage-and-management">Model Storage and Management</h2>
@@ -882,7 +948,7 @@ If you are using Lemonade Server from a Python environment, use the <code>lemona
 <details>
 <summary>Llama-3.2-1B-Instruct-Hybrid</summary>
 
-<div class="highlight"><pre><span></span><code><span class="w">    </span>lemonade-server<span class="w"> </span>pull<span class="w"> </span>Llama-3.2-1B-Instruct-Hybrid
+<div class="highlight"><pre><span></span><code>lemonade-server<span class="w"> </span>pull<span class="w"> </span>Llama-3.2-1B-Instruct-Hybrid
 </code></pre></div>
 
 <table>
@@ -897,7 +963,7 @@ If you are using Lemonade Server from a Python environment, use the <code>lemona
 <details>
 <summary>Llama-3.2-3B-Instruct-Hybrid</summary>
 
-<div class="highlight"><pre><span></span><code><span class="w">    </span>lemonade-server<span class="w"> </span>pull<span class="w"> </span>Llama-3.2-3B-Instruct-Hybrid
+<div class="highlight"><pre><span></span><code>lemonade-server<span class="w"> </span>pull<span class="w"> </span>Llama-3.2-3B-Instruct-Hybrid
 </code></pre></div>
 
 <table>
@@ -912,7 +978,7 @@ If you are using Lemonade Server from a Python environment, use the <code>lemona
 <details>
 <summary>Phi-3-Mini-Instruct-Hybrid</summary>
 
-<div class="highlight"><pre><span></span><code><span class="w">    </span>lemonade-server<span class="w"> </span>pull<span class="w"> </span>Phi-3-Mini-Instruct-Hybrid
+<div class="highlight"><pre><span></span><code>lemonade-server<span class="w"> </span>pull<span class="w"> </span>Phi-3-Mini-Instruct-Hybrid
 </code></pre></div>
 
 <table>
@@ -927,7 +993,7 @@ If you are using Lemonade Server from a Python environment, use the <code>lemona
 <details>
 <summary>Qwen-1.5-7B-Chat-Hybrid</summary>
 
-<div class="highlight"><pre><span></span><code><span class="w">    </span>lemonade-server<span class="w"> </span>pull<span class="w"> </span>Qwen-1.5-7B-Chat-Hybrid
+<div class="highlight"><pre><span></span><code>lemonade-server<span class="w"> </span>pull<span class="w"> </span>Qwen-1.5-7B-Chat-Hybrid
 </code></pre></div>
 
 <table>
@@ -942,7 +1008,7 @@ If you are using Lemonade Server from a Python environment, use the <code>lemona
 <details>
 <summary>DeepSeek-R1-Distill-Llama-8B-Hybrid</summary>
 
-<div class="highlight"><pre><span></span><code><span class="w">    </span>lemonade-server<span class="w"> </span>pull<span class="w"> </span>DeepSeek-R1-Distill-Llama-8B-Hybrid
+<div class="highlight"><pre><span></span><code>lemonade-server<span class="w"> </span>pull<span class="w"> </span>DeepSeek-R1-Distill-Llama-8B-Hybrid
 </code></pre></div>
 
 <table>
@@ -957,7 +1023,7 @@ If you are using Lemonade Server from a Python environment, use the <code>lemona
 <details>
 <summary>DeepSeek-R1-Distill-Qwen-7B-Hybrid</summary>
 
-<div class="highlight"><pre><span></span><code><span class="w">    </span>lemonade-server<span class="w"> </span>pull<span class="w"> </span>DeepSeek-R1-Distill-Qwen-7B-Hybrid
+<div class="highlight"><pre><span></span><code>lemonade-server<span class="w"> </span>pull<span class="w"> </span>DeepSeek-R1-Distill-Qwen-7B-Hybrid
 </code></pre></div>
 
 <table>
@@ -972,7 +1038,7 @@ If you are using Lemonade Server from a Python environment, use the <code>lemona
 <details>
 <summary>Mistral-7B-v0.3-Instruct-Hybrid</summary>
 
-<div class="highlight"><pre><span></span><code><span class="w">    </span>lemonade-server<span class="w"> </span>pull<span class="w"> </span>Mistral-7B-v0.3-Instruct-Hybrid
+<div class="highlight"><pre><span></span><code>lemonade-server<span class="w"> </span>pull<span class="w"> </span>Mistral-7B-v0.3-Instruct-Hybrid
 </code></pre></div>
 
 <table>
@@ -987,7 +1053,7 @@ If you are using Lemonade Server from a Python environment, use the <code>lemona
 <details>
 <summary>Llama-3.1-8B-Instruct-Hybrid</summary>
 
-<div class="highlight"><pre><span></span><code><span class="w">    </span>lemonade-server<span class="w"> </span>pull<span class="w"> </span>Llama-3.1-8B-Instruct-Hybrid
+<div class="highlight"><pre><span></span><code>lemonade-server<span class="w"> </span>pull<span class="w"> </span>Llama-3.1-8B-Instruct-Hybrid
 </code></pre></div>
 
 <table>
@@ -1002,7 +1068,7 @@ If you are using Lemonade Server from a Python environment, use the <code>lemona
 <details>
 <summary>Llama-xLAM-2-8b-fc-r-Hybrid</summary>
 
-<div class="highlight"><pre><span></span><code><span class="w">    </span>lemonade-server<span class="w"> </span>pull<span class="w"> </span>Llama-xLAM-2-8b-fc-r-Hybrid
+<div class="highlight"><pre><span></span><code>lemonade-server<span class="w"> </span>pull<span class="w"> </span>Llama-xLAM-2-8b-fc-r-Hybrid
 </code></pre></div>
 
 <table>
@@ -1018,7 +1084,7 @@ If you are using Lemonade Server from a Python environment, use the <code>lemona
 <details>
 <summary>Qwen2.5-0.5B-Instruct-CPU</summary>
 
-<div class="highlight"><pre><span></span><code><span class="w">    </span>lemonade-server<span class="w"> </span>pull<span class="w"> </span>Qwen2.5-0.5B-Instruct-CPU
+<div class="highlight"><pre><span></span><code>lemonade-server<span class="w"> </span>pull<span class="w"> </span>Qwen2.5-0.5B-Instruct-CPU
 </code></pre></div>
 
 <table>
@@ -1033,7 +1099,7 @@ If you are using Lemonade Server from a Python environment, use the <code>lemona
 <details>
 <summary>Phi-3-Mini-Instruct-CPU</summary>
 
-<div class="highlight"><pre><span></span><code><span class="w">    </span>lemonade-server<span class="w"> </span>pull<span class="w"> </span>Phi-3-Mini-Instruct-CPU
+<div class="highlight"><pre><span></span><code>lemonade-server<span class="w"> </span>pull<span class="w"> </span>Phi-3-Mini-Instruct-CPU
 </code></pre></div>
 
 <table>
@@ -1048,7 +1114,7 @@ If you are using Lemonade Server from a Python environment, use the <code>lemona
 <details>
 <summary>Qwen-1.5-7B-Chat-CPU</summary>
 
-<div class="highlight"><pre><span></span><code><span class="w">    </span>lemonade-server<span class="w"> </span>pull<span class="w"> </span>Qwen-1.5-7B-Chat-CPU
+<div class="highlight"><pre><span></span><code>lemonade-server<span class="w"> </span>pull<span class="w"> </span>Qwen-1.5-7B-Chat-CPU
 </code></pre></div>
 
 <table>
@@ -1063,7 +1129,7 @@ If you are using Lemonade Server from a Python environment, use the <code>lemona
 <details>
 <summary>DeepSeek-R1-Distill-Llama-8B-CPU</summary>
 
-<div class="highlight"><pre><span></span><code><span class="w">    </span>lemonade-server<span class="w"> </span>pull<span class="w"> </span>DeepSeek-R1-Distill-Llama-8B-CPU
+<div class="highlight"><pre><span></span><code>lemonade-server<span class="w"> </span>pull<span class="w"> </span>DeepSeek-R1-Distill-Llama-8B-CPU
 </code></pre></div>
 
 <table>
@@ -1078,7 +1144,7 @@ If you are using Lemonade Server from a Python environment, use the <code>lemona
 <details>
 <summary>DeepSeek-R1-Distill-Qwen-7B-CPU</summary>
 
-<div class="highlight"><pre><span></span><code><span class="w">    </span>lemonade-server<span class="w"> </span>pull<span class="w"> </span>DeepSeek-R1-Distill-Qwen-7B-CPU
+<div class="highlight"><pre><span></span><code>lemonade-server<span class="w"> </span>pull<span class="w"> </span>DeepSeek-R1-Distill-Qwen-7B-CPU
 </code></pre></div>
 
 <table>
@@ -1094,7 +1160,7 @@ If you are using Lemonade Server from a Python environment, use the <code>lemona
 <details>
 <summary>Qwen3-0.6B-GGUF</summary>
 
-<div class="highlight"><pre><span></span><code><span class="w">    </span>lemonade-server<span class="w"> </span>pull<span class="w"> </span>Qwen3-0.6B-GGUF
+<div class="highlight"><pre><span></span><code>lemonade-server<span class="w"> </span>pull<span class="w"> </span>Qwen3-0.6B-GGUF
 </code></pre></div>
 
 <table>
@@ -1110,7 +1176,7 @@ If you are using Lemonade Server from a Python environment, use the <code>lemona
 <details>
 <summary>Qwen3-1.7B-GGUF</summary>
 
-<div class="highlight"><pre><span></span><code><span class="w">    </span>lemonade-server<span class="w"> </span>pull<span class="w"> </span>Qwen3-1.7B-GGUF
+<div class="highlight"><pre><span></span><code>lemonade-server<span class="w"> </span>pull<span class="w"> </span>Qwen3-1.7B-GGUF
 </code></pre></div>
 
 <table>
@@ -1126,7 +1192,7 @@ If you are using Lemonade Server from a Python environment, use the <code>lemona
 <details>
 <summary>Qwen3-4B-GGUF</summary>
 
-<div class="highlight"><pre><span></span><code><span class="w">    </span>lemonade-server<span class="w"> </span>pull<span class="w"> </span>Qwen3-4B-GGUF
+<div class="highlight"><pre><span></span><code>lemonade-server<span class="w"> </span>pull<span class="w"> </span>Qwen3-4B-GGUF
 </code></pre></div>
 
 <table>
@@ -1142,7 +1208,7 @@ If you are using Lemonade Server from a Python environment, use the <code>lemona
 <details>
 <summary>Qwen3-8B-GGUF</summary>
 
-<div class="highlight"><pre><span></span><code><span class="w">    </span>lemonade-server<span class="w"> </span>pull<span class="w"> </span>Qwen3-8B-GGUF
+<div class="highlight"><pre><span></span><code>lemonade-server<span class="w"> </span>pull<span class="w"> </span>Qwen3-8B-GGUF
 </code></pre></div>
 
 <table>
@@ -1158,7 +1224,7 @@ If you are using Lemonade Server from a Python environment, use the <code>lemona
 <details>
 <summary>DeepSeek-Qwen3-8B-GGUF</summary>
 
-<div class="highlight"><pre><span></span><code><span class="w">    </span>lemonade-server<span class="w"> </span>pull<span class="w"> </span>DeepSeek-Qwen3-8B-GGUF
+<div class="highlight"><pre><span></span><code>lemonade-server<span class="w"> </span>pull<span class="w"> </span>DeepSeek-Qwen3-8B-GGUF
 </code></pre></div>
 
 <table>
@@ -1174,7 +1240,7 @@ If you are using Lemonade Server from a Python environment, use the <code>lemona
 <details>
 <summary>Qwen3-14B-GGUF</summary>
 
-<div class="highlight"><pre><span></span><code><span class="w">    </span>lemonade-server<span class="w"> </span>pull<span class="w"> </span>Qwen3-14B-GGUF
+<div class="highlight"><pre><span></span><code>lemonade-server<span class="w"> </span>pull<span class="w"> </span>Qwen3-14B-GGUF
 </code></pre></div>
 
 <table>
@@ -1190,7 +1256,7 @@ If you are using Lemonade Server from a Python environment, use the <code>lemona
 <details>
 <summary>Qwen3-30B-A3B-GGUF</summary>
 
-<div class="highlight"><pre><span></span><code><span class="w">    </span>lemonade-server<span class="w"> </span>pull<span class="w"> </span>Qwen3-30B-A3B-GGUF
+<div class="highlight"><pre><span></span><code>lemonade-server<span class="w"> </span>pull<span class="w"> </span>Qwen3-30B-A3B-GGUF
 </code></pre></div>
 
 <table>
@@ -1206,7 +1272,7 @@ If you are using Lemonade Server from a Python environment, use the <code>lemona
 <details>
 <summary>Gemma-3-4b-it-GGUF</summary>
 
-<div class="highlight"><pre><span></span><code><span class="w">    </span>lemonade-server<span class="w"> </span>pull<span class="w"> </span>Gemma-3-4b-it-GGUF
+<div class="highlight"><pre><span></span><code>lemonade-server<span class="w"> </span>pull<span class="w"> </span>Gemma-3-4b-it-GGUF
 </code></pre></div>
 
 <table>
@@ -1214,6 +1280,24 @@ If you are using Lemonade Server from a Python environment, use the <code>lemona
 <tr><td>Checkpoint</td><td><a href="https://huggingface.co/ggml-org/gemma-3-4b-it-GGUF">ggml-org/gemma-3-4b-it-GGUF</a></td></tr>
 <tr><td>GGUF Variant</td><td>Q4_K_M</td></tr>
 <tr><td>Mmproj</td><td>mmproj-model-f16.gguf</td></tr>
+<tr><td>Recipe</td><td>llamacpp</td></tr>
+<tr><td>Reasoning</td><td>False</td></tr>
+<tr><td>Labels</td><td>['vision']</td></tr>
+</table>
+
+</details>
+
+<details>
+<summary>Qwen2.5-VL-7B-Instruct-GGUF</summary>
+
+<div class="highlight"><pre><span></span><code>lemonade-server<span class="w"> </span>pull<span class="w"> </span>Qwen2.5-VL-7B-Instruct-GGUF
+</code></pre></div>
+
+<table>
+<tr><th>Key</th><th>Value</th></tr>
+<tr><td>Checkpoint</td><td><a href="https://huggingface.co/ggml-org/Qwen2.5-VL-7B-Instruct-GGUF">ggml-org/Qwen2.5-VL-7B-Instruct-GGUF</a></td></tr>
+<tr><td>GGUF Variant</td><td>Q4_K_M</td></tr>
+<tr><td>Mmproj</td><td>mmproj-Qwen2.5-VL-7B-Instruct-f16.gguf</td></tr>
 <tr><td>Recipe</td><td>llamacpp</td></tr>
 <tr><td>Reasoning</td><td>False</td></tr>
 </table>
