@@ -2539,8 +2539,8 @@ In case of an error, the status will be <code>error</code> and the message will 
 <p>The OGA models (<code>*-CPU</code>, <code>*-Hybrid</code>) available in Lemonade Server use Lemonade's built-in server implementation. However, Lemonade SDK v7.0.1 introduced experimental support for <a href="https://github.com/ggml-org/llama.cpp">llama.cpp's</a> Vulkan <code>llama-server</code> as an alternative backend for CPU and GPU.</p>
 <p>The <code>llama-server</code> backend works with Lemonade's suggested <code>*-GGUF</code> models, as well as any .gguf model from Hugging Face. Windows and Ubuntu Linux are supported. Details:
 - Lemonade Server wraps <code>llama-server</code> with support for the <code>lemonade-server</code> CLI, client web app, and endpoints (e.g., <code>models</code>, <code>pull</code>, <code>load</code>, etc.).
-  - The <code>chat/completions</code> endpoint, in streaming mode, is the only completions/responses endpoint supported. 
-  - Non-streaming, non-chat <code>completions</code>, and <code>responses</code> are not supported at this time.
+  - The <code>chat/completions</code> endpoint is the only completions/responses endpoint supported. 
+  - Non-chat <code>completions</code>, and <code>responses</code> are not supported at this time.
 - A single Lemonade Server process can seamlessly switch between OGA and GGUF models.
   - Lemonade Server will attempt to load models onto GPU with Vulkan first, and if that doesn't work it will fall back to CPU.
   - From the end-user's perspective, OGA vs. GGUF should be completely transparent: they wont be aware of whether the built-in server or <code>llama-server</code> is serving their model.</p>
