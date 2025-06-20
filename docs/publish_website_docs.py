@@ -58,7 +58,7 @@ def main():
 
     # Remove existing docs/docs if it exists
     if os.path.exists("docs/docs"):
-        print("Removing ",os.path.abspath("docs/docs"))
+        print("Removing ", os.path.abspath("docs/docs"))
         shutil.rmtree("docs/docs")
 
     # Build the documentation using mkdocs
