@@ -7,8 +7,7 @@ on:
       - v*
       - RC*
   pull_request:
-    branches:
-      - '**'
+  merge_group:
 
 jobs:
   build-n-publish:

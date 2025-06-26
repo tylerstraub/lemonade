@@ -1,12 +1,6 @@
 # onnxruntime_genai is not lint-friendly yet and PyLint can't
 # find any of the class methods
 # pylint: disable=no-member
-#
-# Model builder constraints:
-#   11/10/24 Need transformers <4.45.0 OR onnxruntime-genai 0.5.0 (which must be built from source)
-#   (transformers v4.45 changes the format of the tokenizer.json file which will be supported in
-#   onnxruntime-genai 0.5)
-#
 
 import argparse
 import os
@@ -270,7 +264,14 @@ class OgaLoad(FirstTool):
         path to the location of the onnx_custom_ops.dll in the current environment.
         This is needed for hybrid inference.
         """
-        oga_path, version = get_oga_hybrid_dir()
+        import onnxruntime_genai as og
+        from packaging.version import Version
+
+        if Version(og.__version__) >= Version("0.7.0"):
+            oga_path, version = og.__file__, og.__version__
+            oga_path = os.path.dirname(oga_path)
+        else:
+            oga_path, version = get_oga_hybrid_dir()
 
         if "1.3.0" in version:
             custom_ops_path = os.path.join(
@@ -279,8 +280,11 @@ class OgaLoad(FirstTool):
                 "bin",
                 "onnx_custom_ops.dll",
             )
-        else:
+        elif "1.4.0" in version:
             custom_ops_path = os.path.join(oga_path, "libs", "onnx_custom_ops.dll")
+        else:
+            # PyPI package
+            custom_ops_path = os.path.join(oga_path, "onnx_custom_ops.dll")
 
         # Insert the custom_ops_path into the model config file
         config_path = os.path.join(full_model_path, "genai_config.json")
@@ -403,7 +407,13 @@ class OgaLoad(FirstTool):
         in cleanup.
         """
         # Determine the Ryzen AI OGA version and hybrid artifacts path
-        oga_path, version = get_oga_hybrid_dir()
+        import onnxruntime_genai as og
+        from packaging.version import Version
+
+        if Version(og.__version__) >= Version("0.7.0"):
+            oga_path, version = "", og.__version__
+        else:
+            oga_path, version = get_oga_hybrid_dir()
 
         if "1.3.0" in version:
             dst_dll = os.path.join(
@@ -568,7 +578,15 @@ class OgaLoad(FirstTool):
         state.save_stat(Keys.DTYPE, dtype)
         state.save_stat(Keys.DEVICE, device)
         if device in ["hybrid", "npu"]:
-            ryzen_ai_version_info = get_ryzen_ai_version_info()
+            import onnxruntime_genai as og
+            from packaging.version import Version
+
+            if Version(og.__version__) >= Version("0.7.0"):
+                # The OGA RAI PyPI package starts at this version number
+                ryzen_ai_version_info = {"version": og.__version__}
+            else:
+                # OGA RAI was installed with lemonade-install
+                ryzen_ai_version_info = get_ryzen_ai_version_info()
             state.save_stat(Keys.RYZEN_AI_VERSION_INFO, ryzen_ai_version_info)
 
         # Check if input is a local folder

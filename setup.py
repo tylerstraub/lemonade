@@ -48,29 +48,25 @@ setup(
         "transformers<=4.51.3",
         "jinja2",
         "tabulate",
-        # huggingface-hub==0.31.0 introduces a new transfer protocol that was causing us issues
-        "huggingface-hub==0.30.2",
+        "sentencepiece",
+        "huggingface-hub==0.33.0",
     ],
     extras_require={
         # The -minimal extras are meant to deploy specific backends into end-user
         # applications, without including developer-focused tools
         "oga-hybrid-minimal": [
-            # Note: `lemonade-install --ryzenai hybrid` is necessary
-            # to complete installation
-            "onnx==1.16.1",
-            "numpy==1.26.4",
+            "onnxruntime-genai-directml-ryzenai==0.7.0.2",
             "protobuf>=6.30.1",
         ],
         "oga-cpu-minimal": [
-            "onnxruntime-genai==0.6.0",
-            "onnxruntime >=1.10.1,<1.22.0",
+            "onnxruntime-genai==0.8.2",
+            "onnxruntime >=1.22.0",
         ],
         "llm": [
             # Minimal dependencies for developers to use all features of
             # Lemonade SDK, including building and optimizing models
             "torch>=2.6.0",
             "accelerate",
-            "sentencepiece",
             "datasets",
             "pandas>=1.5.3",
             "matplotlib",
@@ -90,13 +86,15 @@ setup(
             "lemonade-sdk[llm]",
         ],
         "llm-oga-cuda": [
-            "onnxruntime-genai-cuda==0.6.0",
-            "onnxruntime-gpu >=1.19.1,<1.22.0",
-            "transformers<4.45.0",
+            "onnxruntime-genai-cuda==0.8.2",
+            "onnxruntime-gpu >=1.22.0",
+            "transformers<=4.51.3",
             "lemonade-sdk[llm]",
         ],
         "llm-oga-npu": [
             "onnx==1.16.0",
+            # NPU requires specific onnxruntime version for Ryzen AI compatibility
+            # This may conflict with other OGA extras that require >=1.22.0
             "onnxruntime==1.18.0",
             "numpy==1.26.4",
             "protobuf>=6.30.1",
