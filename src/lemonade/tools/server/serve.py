@@ -62,6 +62,7 @@ from lemonade_server.pydantic_models import (
 )
 from lemonade.tools.management_tools import ManagementTool
 import lemonade.tools.server.llamacpp as llamacpp
+import lemonade.tools.server.minions as minions
 from lemonade.tools.server.tool_calls import extract_tool_calls, get_tool_call_pattern
 from lemonade.tools.server.webapp import get_webapp_html
 from lemonade.tools.server.utils.port import lifespan
@@ -614,6 +615,10 @@ class Server(ManagementTool):
 
         if self.llm_loaded.recipe == "llamacpp":
             return llamacpp.chat_completion(
+                chat_completion_request, self.llama_telemetry
+            )
+        elif self.llm_loaded.recipe == "minions":
+            return minions.chat_completion(
                 chat_completion_request, self.llama_telemetry
             )
 
@@ -1236,7 +1241,11 @@ class Server(ManagementTool):
         Send performance statistics to the client.
         """
         # If using llama server, get telemetry from the telemetry instance
-        if self.llm_loaded and self.llm_loaded.recipe == "llamacpp":
+        if (
+            self.llm_loaded
+            and self.llm_loaded.recipe == "llamacpp"
+            or self.llm_loaded.recipe == "minions"
+        ):
             return self.llama_telemetry.get_telemetry_data()
 
         # For built-in server, use the existing telemetry
@@ -1381,10 +1390,11 @@ class Server(ManagementTool):
             # Caching mechanism: if the checkpoint is already loaded there is nothing else to do
             if (
                 self.llm_loaded
-                and config_to_use.checkpoint == self.llm_loaded.checkpoint
+                and config_to_use.checkpoint.split("|")[0] == self.llm_loaded.checkpoint
             ):
                 if (
                     self.llm_loaded.recipe == "llamacpp"
+                    or self.llm_loaded.recipe == "minions"
                     and self.llama_server_process.poll()
                 ):
                     # llama-server process has gone away for some reason, so we should
@@ -1402,7 +1412,16 @@ class Server(ManagementTool):
 
             logging.info(f"Loading llm: {config.model_name}")
             try:
-                if config_to_use.recipe == "llamacpp":
+                if (
+                    config_to_use.recipe == "llamacpp"
+                    or config_to_use.recipe == "minions"
+                ):
+                    if config_to_use.recipe == "minions":
+                        # Minions checkpoints contain two models. The first is the
+                        # local model name, and the second is the remote model name.
+                        config_to_use.checkpoint = config_to_use.checkpoint.split("|")[
+                            0
+                        ]
                     self.llama_server_process = llamacpp.server_load(
                         model_config=config_to_use,
                         telemetry=self.llama_telemetry,
@@ -1444,7 +1463,10 @@ class Server(ManagementTool):
                 for _ in range(self.max_concurrent_generations):
                     await self._generate_semaphore.acquire()
 
-            if self.llm_loaded.recipe == "llamacpp":
+            if (
+                self.llm_loaded.recipe == "llamacpp"
+                or self.llm_loaded.recipe == "minions"
+            ):
                 self.llama_server_process.terminate()
 
             self.llm_loaded = None
