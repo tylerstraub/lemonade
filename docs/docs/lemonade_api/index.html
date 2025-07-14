@@ -713,6 +713,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#system-information-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔍 System Information Functions
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#supported-model-formats" class="md-nav__link">
     <span class="md-ellipsis">
       📜 Supported Model Formats
@@ -787,6 +796,25 @@
 <p>Function Arguments:
 - checkpoint: The Hugging Face or OGA checkpoint that defines the LLM.
 - recipe: Defines the implementation and hardware used for the LLM. Default is "hf-cpu".</p>
+<h2 id="system-information-functions">🔍 System Information Functions</h2>
+<p>The Lemonade API also provides functions to programmatically access system and device information:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">lemonade.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_system_info</span><span class="p">,</span> <span class="n">get_device_info</span>
+
+<span class="c1"># Get essential system information (OS, processor, memory, devices)</span>
+<span class="n">system_info</span> <span class="o">=</span> <span class="n">get_system_info</span><span class="p">()</span>
+
+<span class="c1"># Get detailed system information including Python packages and extended details</span>
+<span class="n">system_info_verbose</span> <span class="o">=</span> <span class="n">get_system_info</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Get only device information (CPU, GPU, NPU details)</span>
+<span class="n">device_info</span> <span class="o">=</span> <span class="n">get_device_info</span><span class="p">()</span>
+</code></pre></div>
+<p>These functions return the same information available through the <code>lemonade system-info</code> CLI command and the <code>/api/v1/system-info</code> server endpoint, including:
+- Hardware details (CPU, memory, BIOS)
+- Device availability (AMD iGPU, dGPU, NPU)
+- Inference engine compatibility per device
+- Driver versions and system configuration
+- Python package versions (verbose mode only)</p>
 <h2 id="supported-model-formats">📜 Supported Model Formats</h2>
 <p>Lemonade API currently supports:</p>
 <ul>
