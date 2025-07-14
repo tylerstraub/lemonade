@@ -54,6 +54,8 @@ from lemonade_server.pydantic_models import (
     LoadConfig,
     CompletionRequest,
     ChatCompletionRequest,
+    EmbeddingsRequest,
+    RerankingRequest,
     ResponsesRequest,
     PullConfig,
     DeleteConfig,
@@ -226,12 +228,18 @@ class Server(ManagementTool):
             self.app.get(f"{prefix}/health")(self.health)
             self.app.get(f"{prefix}/halt")(self.halt_generation)
             self.app.get(f"{prefix}/stats")(self.send_stats)
+            self.app.get(f"{prefix}/system-info")(self.get_system_info)
             self.app.post(f"{prefix}/completions")(self.completions)
             self.app.post(f"{prefix}/responses")(self.responses)
 
             # OpenAI-compatible routes
             self.app.post(f"{prefix}/chat/completions")(self.chat_completions)
+            self.app.post(f"{prefix}/embeddings")(self.embeddings)
             self.app.get(f"{prefix}/models")(self.models)
+
+            # JinaAI routes (jina.ai/reranker/)
+            self.app.post(f"{prefix}/reranking")(self.reranking)
+            self.app.post(f"{prefix}/rerank")(self.reranking)
 
     @staticmethod
     def parser(add_help: bool = True) -> argparse.ArgumentParser:
@@ -796,6 +804,72 @@ class Server(ManagementTool):
                 created=int(time.time()),
             )
 
+    async def embeddings(self, embeddings_request: EmbeddingsRequest):
+        """
+        Generate embeddings for the provided input.
+        """
+        # Initialize load config from embeddings request
+        lc = LoadConfig(model_name=embeddings_request.model)
+
+        # Load the model if it's different from the currently loaded one
+        await self.load_llm(lc)
+
+        if self.llm_loaded.recipe == "llamacpp":
+            try:
+                return llamacpp.embeddings(embeddings_request, self.llama_telemetry)
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                # Check if model has embeddings label
+                model_info = ModelManager().supported_models.get(
+                    self.llm_loaded.model_name, {}
+                )
+                if "embeddings" not in model_info.get("labels", []):
+                    raise HTTPException(
+                        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                        detail="You tried to generate embeddings for a model that is "
+                        "not labeled as an embeddings model. Please use another model "
+                        "or re-register the current model with the 'embeddings' label.",
+                    ) from e
+                else:
+                    raise e
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Embeddings not supported for recipe: {self.llm_loaded.recipe}",
+            )
+
+    async def reranking(self, reranking_request: RerankingRequest):
+        """
+        Rerank documents based on their relevance to a query using the llamacpp server.
+        """
+        # Initialize load config from reranking request
+        lc = LoadConfig(model_name=reranking_request.model)
+
+        # Load the model if it's different from the currently loaded one
+        await self.load_llm(lc)
+
+        if self.llm_loaded.recipe == "llamacpp":
+            try:
+                return llamacpp.reranking(reranking_request, self.llama_telemetry)
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                # Check if model has reranking label
+                model_info = ModelManager().supported_models.get(
+                    self.llm_loaded.model_name, {}
+                )
+                if "reranking" not in model_info.get("labels", []):
+                    raise HTTPException(
+                        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                        detail="You tried to use reranking for a model that is "
+                        "not labeled as a reranking model. Please use another model "
+                        "or re-register the current model with the 'reranking' label.",
+                    ) from e
+                else:
+                    raise e
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Reranking not supported for recipe: {self.llm_loaded.recipe}",
+            )
+
     def apply_chat_template(
         self, messages: list[dict], tools: list[dict] | None = None
     ):
@@ -1202,6 +1276,34 @@ class Server(ManagementTool):
                 else None
             ),
         }
+
+    async def get_system_info(self, request: Request):
+        """
+        Return system and device enumeration information.
+        Supports optional 'verbose' query parameter.
+        """
+        from lemonade.common.system_info import (
+            get_system_info_dict,
+            get_device_info_dict,
+            get_system_info as get_system_info_obj,
+        )
+
+        # Get verbose parameter from query string (default to False)
+        verbose = request.query_params.get("verbose", "false").lower() in ["true", "1"]
+
+        info = get_system_info_dict()
+        info["devices"] = get_device_info_dict()
+
+        # Filter out verbose-only information if not in verbose mode
+        if not verbose:
+            essential_keys = ["OS Version", "Processor", "Physical Memory", "devices"]
+            info = {k: v for k, v in info.items() if k in essential_keys}
+        else:
+            # In verbose mode, add Python packages at the end
+            system_info_obj = get_system_info_obj()
+            info["Python Packages"] = system_info_obj.get_python_packages()
+
+        return info
 
     def model_load_failure(self, model_reference: str, message: Optional[str] = None):
         """
