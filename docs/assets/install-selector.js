@@ -157,26 +157,44 @@ window.lmnRender = function() {
     }
   });
   // Set click handlers for all options
-  document.getElementById('os-win').onclick = function() { lmnSet('os','win'); };
-  document.getElementById('os-linux').onclick = function() { lmnSet('os','linux'); };
-  document.getElementById('type-server').onclick = function() { lmnSet('type','server'); };
-  document.getElementById('type-full').onclick = function() { lmnSet('type','full'); };
-  document.getElementById('method-gui').onclick = function() { lmnSet('method','gui'); };
-  document.getElementById('method-pypi').onclick = function() { lmnSet('method','pypi'); };
-  document.getElementById('method-src').onclick = function() { lmnSet('method','src'); };
-  document.getElementById('fw-oga').onclick = function() { lmnSet('fw','oga'); };
-  document.getElementById('fw-torch').onclick = function() { lmnSet('fw','torch'); };
-  document.getElementById('fw-llama').onclick = function() { lmnSet('fw','llama'); };
-  document.getElementById('dev-hybrid').onclick = function() { lmnSet('dev','hybrid'); };
-  document.getElementById('dev-cpu').onclick = function() { lmnSet('dev','cpu'); };
-  document.getElementById('dev-gpu').onclick = function() { lmnSet('dev','gpu'); };
+  var osWin = document.getElementById('os-win');
+  if (osWin) osWin.onclick = function() { lmnSet('os','win'); };
+  var osLinux = document.getElementById('os-linux');
+  if (osLinux) osLinux.onclick = function() { lmnSet('os','linux'); };
+  var typeServer = document.getElementById('type-server');
+  if (typeServer) typeServer.onclick = function() { lmnSet('type','server'); };
+  var typeFull = document.getElementById('type-full');
+  if (typeFull) typeFull.onclick = function() { lmnSet('type','full'); };
+  var methodGui = document.getElementById('method-gui');
+  if (methodGui) methodGui.onclick = function() { lmnSet('method','gui'); };
+  var methodPypi = document.getElementById('method-pypi');
+  if (methodPypi) methodPypi.onclick = function() { lmnSet('method','pypi'); };
+  var methodSrc = document.getElementById('method-src');
+  if (methodSrc) methodSrc.onclick = function() { lmnSet('method','src'); };
+  var fwOga = document.getElementById('fw-oga');
+  if (fwOga) fwOga.onclick = function() { lmnSet('fw','oga'); };
+  var fwTorch = document.getElementById('fw-torch');
+  if (fwTorch) fwTorch.onclick = function() { lmnSet('fw','torch'); };
+  var fwLlama = document.getElementById('fw-llama');
+  if (fwLlama) fwLlama.onclick = function() { lmnSet('fw','llama'); };
+  var devHybrid = document.getElementById('dev-hybrid');
+  if (devHybrid) devHybrid.onclick = function() { lmnSet('dev','hybrid'); };
+  var devCpu = document.getElementById('dev-cpu');
+  if (devCpu) devCpu.onclick = function() { lmnSet('dev','cpu'); };
+  var devGpu = document.getElementById('dev-gpu');
+  if (devGpu) devGpu.onclick = function() { lmnSet('dev','gpu'); };
 
   // Highlight active
-  document.getElementById('os-'+lmnState.os).classList.add('lmn-active');
-  document.getElementById('type-'+lmnState.type).classList.add('lmn-active');
-  document.getElementById('method-'+lmnState.method).classList.add('lmn-active');
-  document.getElementById('fw-'+lmnState.fw).classList.add('lmn-active');
-  document.getElementById('dev-'+lmnState.dev).classList.add('lmn-active');
+  var osElement = document.getElementById('os-'+lmnState.os);
+  if (osElement) osElement.classList.add('lmn-active');
+  var typeElement = document.getElementById('type-'+lmnState.type);
+  if (typeElement) typeElement.classList.add('lmn-active');
+  var methodElement = document.getElementById('method-'+lmnState.method);
+  if (methodElement) methodElement.classList.add('lmn-active');
+  var fwElement = document.getElementById('fw-'+lmnState.fw);
+  if (fwElement) fwElement.classList.add('lmn-active');
+  var devElement = document.getElementById('dev-'+lmnState.dev);
+  if (devElement) devElement.classList.add('lmn-active');
 
   // Gray out incompatible options (but keep them clickable)
   const opts = {
@@ -188,7 +206,8 @@ window.lmnRender = function() {
   };
   opts.os.forEach(os => {
     if (!lmnIsAllowed(os, lmnState.method, lmnState.fw, lmnState.dev, lmnState.type)) {
-      document.getElementById('os-'+os).classList.add('lmn-disabled');
+      var osEl = document.getElementById('os-'+os);
+      if (osEl) osEl.classList.add('lmn-disabled');
     }
   });
   opts.type.forEach(type => {
@@ -196,21 +215,25 @@ window.lmnRender = function() {
   });
   opts.method.forEach(method => {
     if (!lmnIsAllowed(lmnState.os, method, lmnState.fw, lmnState.dev, lmnState.type) && !lmnAlwaysEnabledMethod.includes(method)) {
-      document.getElementById('method-'+method).classList.add('lmn-disabled');
+      var methodEl = document.getElementById('method-'+method);
+      if (methodEl) methodEl.classList.add('lmn-disabled');
     }
   });
   opts.fw.forEach(fw => {
     if (!lmnIsAllowed(lmnState.os, lmnState.method, fw, lmnState.dev, lmnState.type)) {
-      document.getElementById('fw-'+fw).classList.add('lmn-disabled');
+      var fwEl = document.getElementById('fw-'+fw);
+      if (fwEl) fwEl.classList.add('lmn-disabled');
     }
     // PyTorch is always disabled for server-only
     if (lmnState.type === 'server' && fw === 'torch') {
-      document.getElementById('fw-torch').classList.add('lmn-disabled');
+      var fwTorchEl = document.getElementById('fw-torch');
+      if (fwTorchEl) fwTorchEl.classList.add('lmn-disabled');
     }
   });
   opts.dev.forEach(dev => {
     if (!lmnIsAllowed(lmnState.os, lmnState.method, lmnState.fw, dev, lmnState.type)) {
-      document.getElementById('dev-'+dev).classList.add('lmn-disabled');
+      var devEl = document.getElementById('dev-'+dev);
+      if (devEl) devEl.classList.add('lmn-disabled');
     }
   });
 
@@ -281,12 +304,12 @@ window.lmnRender = function() {
     if (lmnState.fw === 'oga') {
       if (lmnState.dev === 'hybrid' || lmnState.dev === 'cpu') {
         cmd = 'Download Lemonade Server Installer (.exe)';
-        link = 'https://github.com/lemonade-sdk/lemonade/releases/latest/download/lemonade_server_installer.exe';
+        link = 'https://github.com/aigdat/genai/releases/latest/download/lemonade_server_installer.exe';
       }
     } else if (lmnState.fw === 'llama') {
       if (lmnState.dev === 'cpu' || lmnState.dev === 'gpu') {
         cmd = 'Download Lemonade Server Installer (.exe)';
-        link = 'https://github.com/lemonade-sdk/lemonade/releases/latest/download/lemonade_server_installer.exe';
+        link = 'https://github.com/aigdat/genai/releases/latest/download/lemonade_server_installer.exe';
       }
     }
   } else if (lmnState.method === 'pypi' || lmnState.method === 'src') {
@@ -493,7 +516,7 @@ window.lmnInit = function() {
         <div id="lmn-badges" class="lmn-badges"></div>
         <div id="lmn-install-content">
           <div id="lmn-download-area" class="lmn-download-section" style="display: none;">
-            <a id="lmn-link" href="https://github.com/lemonade-sdk/lemonade/releases/latest/download/lemonade_server_installer.exe">Download Lemonade Server Installer (.exe)</a>
+            <a id="lmn-link" href="https://github.com/aigdat/genai/releases/latest/download/lemonade_server_installer.exe">Download Lemonade Server Installer (.exe)</a>
           </div>
           <div id="lmn-command" class="lmn-command"></div>
         </div>
