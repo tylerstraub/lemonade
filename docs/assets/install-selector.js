@@ -34,7 +34,7 @@ const lmnAllowlist = [
 
 const lmnAlwaysEnabledMethod = ['pypi', 'src'];
 
-window.lmnState = { os: 'win', type: 'server', method: 'pypi', fw: 'oga', dev: 'cpu' };
+window.lmnState = { os: 'win', type: 'server', method: 'gui', fw: 'oga', dev: 'hybrid' };
 
 function lmnIsAllowed(os, method, fw, dev, type) {
   // PyTorch not allowed for server-only
