@@ -235,9 +235,6 @@
           if (line.trim().startsWith('- ')) {
             // Extract headline item, remove markdown formatting
             let item = line.trim().substring(2).trim();
-            // Remove backticks and @ mentions for cleaner display
-            item = item.replace(/`([^`]+)`/g, '$1');
-            item = item.replace(/@\w+/g, '');
             item = item.trim();
             headlines.push(item);
           }
