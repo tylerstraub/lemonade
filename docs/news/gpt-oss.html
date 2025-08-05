@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Run OpenAI's gpt-oss locally with Lemonade - Lemonade Server</title>
+  <link rel="icon" href="../assets/favicon.ico">
+  <link rel="stylesheet" href="../assets/website-styles.css">
+  <meta name="description" content="Lemonade now supports OpenAI's gpt-oss models, bringing you the power to run these cutting-edge models locally on your own hardware!">
+  <meta property="og:title" content="Run OpenAI's gpt-oss locally with Lemonade">
+  <meta property="og:description" content="Lemonade now supports OpenAI's gpt-oss models, bringing you the power to run these cutting-edge models locally on your own hardware!">
+  <meta property="og:type" content="article">
+  <meta property="article:published_time" content="2025-08-05">
+  <meta property="article:author" content="Daniel, Jeremy, Krishna, Victoria">
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar" id="navbar">
+    <div class="navbar-brand">
+      <span class="brand-title"><a href="https://lemonade-server.ai">🍋 Lemonade Server</a></span>
+    </div>
+    <div class="navbar-links">
+      <a href="https://github.com/lemonade-sdk/lemonade">GitHub</a>
+      <a href="../docs/">Docs</a>
+      <a href="../docs/server/server_models/">Models</a>
+      <a href="../docs/server/apps/">Featured Apps</a>
+      <a href="index.html">News</a>
+    </div>
+  </nav>
+
+  <!-- Article Content -->
+  <main class="main">
+    <article class="blog-article">
+      <div class="article-header">
+        <div class="article-meta">
+          <span class="article-date">August 5, 2025</span>
+          <span class="article-authors">By Daniel Holanda, Jeremy Fowers, Krishna Sivakumar, Victoria Godsoe</span>
+          <div class="content-type-badge blog-badge">Blog</div>
+        </div>
+        <h1 class="article-title">Run OpenAI's gpt-oss locally with Lemonade</h1>
+        <div class="article-subtitle">
+          We're excited to announce that Lemonade now supports OpenAI's newly released gpt-oss models, bringing you the power to run these cutting-edge models locally on your own hardware! 🎉
+        </div>
+      </div>
+
+      <div class="article-content">
+        <p>Whether you're looking for efficient local inference or want to experiment with OpenAI's latest open-source technology, Lemonade makes it incredibly easy to get started with gpt-oss models right out of the box.</p>
+
+        <h2>What is Lemonade?</h2>
+        <p>Lemonade is a local LLM serving platform that focuses on maximizing performance using the best available hardware acceleration - from neural processing units (NPUs) to GPU acceleration. With Lemonade, you can run large language models entirely on your PC while maintaining full privacy and control over your data.</p>
+
+        <div class="feature-list">
+          <h3>Key features:</h3>
+          <ul>
+            <li>🧠 <strong>Multi-hardware support:</strong> CPU, GPU (Vulkan), and NPU acceleration</li>
+            <li>🔌 <strong>OpenAI-compatible API:</strong> Drop-in replacement for OpenAI's API</li>
+            <li>🎯 <strong>Easy model management:</strong> Built-in model library with one-command installation</li>
+            <li>🖥️ <strong>Cross-platform:</strong> Windows and Linux support</li>
+            <li>🔒 <strong>Privacy-first:</strong> Everything runs locally on your machine</li>
+          </ul>
+        </div>
+
+        <h2>Available gpt-oss Models</h2>
+        <p>Lemonade supports both gpt-oss model sizes:</p>
+
+        <div class="model-grid">
+          <div class="model-card">
+            <h3>gpt-oss-20b</h3>
+            <p>Optimized for lower latency and local use cases (21B parameters with 3.6B active parameters)</p>
+          </div>
+          <div class="model-card">
+            <h3>gpt-oss-120b</h3>
+            <p>Production-ready model for high reasoning tasks (117B parameters with 5.1B active parameters)</p>
+          </div>
+        </div>
+
+        <p>Both models feature OpenAI's innovative sliding window attention and attention sink mechanisms, allowing them to handle extremely long conversations and contexts efficiently while maintaining response quality.</p>
+
+        <h2>Getting Started</h2>
+
+        <h3>Installation</h3>
+        <p>Install Lemonade using pip:</p>
+        <div class="code-block">
+          <pre><code>conda create -n lemon python=3.10
+conda activate lemon
+pip install lemonade-sdk</code></pre>
+        </div>
+
+        <p>Or download our <a href="https://github.com/lemonade-sdk/lemonade/releases/latest/download/Lemonade_Server_Installer.exe" target="_blank" rel="noopener">GUI installer</a> for Windows.</p>
+
+        <h3>Running gpt-oss Models</h3>
+        <p>To run the smaller gpt-oss model:</p>
+        <div class="code-block">
+          <pre><code>lemonade-server run gpt-oss-20b-GGUF</code></pre>
+        </div>
+
+        <p>For the larger model:</p>
+        <div class="code-block">
+          <pre><code>lemonade-server run gpt-oss-120b-GGUF</code></pre>
+        </div>
+
+        <p>You can also install models ahead of time:</p>
+        <div class="code-block">
+          <pre><code>lemonade-server pull gpt-oss-20b-GGUF
+lemonade-server pull gpt-oss-120b-GGUF</code></pre>
+        </div>
+
+        <h3>System Requirements</h3>
+        <div class="requirements-grid">
+          <div class="requirement-card">
+            <h4>gpt-oss-20b-GGUF</h4>
+            <p>~13GB RAM recommended</p>
+          </div>
+          <div class="requirement-card">
+            <h4>gpt-oss-120b-GGUF</h4>
+            <p>Significantly more memory required for optimal performance</p>
+          </div>
+        </div>
+
+        <h2>Join the Community</h2>
+        <p>Ready to try gpt-oss with Lemonade? Here's how to get involved:</p>
+
+        <div class="community-links">
+          <a href="https://lemonade-server.ai" class="community-link" target="_blank" rel="noopener">
+            📥 Download Lemonade
+          </a>
+          <a href="https://lemonade-server.ai/docs/" class="community-link" target="_blank" rel="noopener">
+            📚 Read our documentation
+          </a>
+          <a href="https://discord.gg/5xXzkMu8Zk" class="community-link" target="_blank" rel="noopener">
+            💬 Join our Discord
+          </a>
+          <a href="https://github.com/lemonade-sdk/lemonade/issues" class="community-link" target="_blank" rel="noopener">
+            🐛 Report issues on GitHub
+          </a>
+        </div>
+
+        <div class="article-conclusion">
+          <p><strong>Experience the power of OpenAI's latest models running entirely on your local hardware with Lemonade! 🍋</strong></p>
+        </div>
+      </div>
+
+      <!-- Back to News Button -->
+      <div class="article-navigation">
+        <a href="index.html" class="back-to-news-btn">← Back to News</a>
+      </div>
+    </article>
+  </main>
+
+  <!-- Footer will be inserted here by footer.js -->
+  <div class="footer-placeholder"></div>
+  
+  <script src="../assets/footer.js"></script>
+  <script>
+    // Initialize footer with star count (uses ../ basePath)
+    document.addEventListener('DOMContentLoaded', () => {
+      initializeFooter('../');
+    });
+  </script>
+</body>
+</html>
