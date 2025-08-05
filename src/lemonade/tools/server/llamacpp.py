@@ -29,7 +29,7 @@ from lemonade.tools.llamacpp.utils import (
     download_gguf,
 )
 
-LLAMA_VERSION = "b5787"
+LLAMA_VERSION = "b6095"
 
 
 def llamacpp_address(port: int) -> str:
