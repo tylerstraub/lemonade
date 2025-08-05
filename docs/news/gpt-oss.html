@@ -6,12 +6,16 @@
   <title>Run OpenAI's gpt-oss locally with Lemonade - Lemonade Server</title>
   <link rel="icon" href="../assets/favicon.ico">
   <link rel="stylesheet" href="../assets/website-styles.css">
-  <meta name="description" content="Lemonade now supports OpenAI's gpt-oss models, bringing you the power to run these cutting-edge models locally on your own hardware!">
+  <script>
+    // Define the article description once to avoid repetition
+    const ARTICLE_DESCRIPTION = "Lemonade now supports OpenAI's gpt-oss models, bringing you the power to run these cutting-edge models locally on your own hardware!";
+  </script>
+  <meta name="description" content="">
   <meta property="og:title" content="Run OpenAI's gpt-oss locally with Lemonade">
-  <meta property="og:description" content="Lemonade now supports OpenAI's gpt-oss models, bringing you the power to run these cutting-edge models locally on your own hardware!">
+  <meta property="og:description" content="">
   <meta property="og:type" content="article">
   <meta property="article:published_time" content="2025-08-05">
-  <meta property="article:author" content="Daniel, Jeremy, Krishna, Victoria">
+  <meta property="article:author" content="Daniel Holanda, Jeremy Fowers, Krishna Sivakumar, Victoria Godsoe">
 </head>
 <body>
   <!-- Navbar -->
@@ -38,8 +42,8 @@
           <div class="content-type-badge blog-badge">Blog</div>
         </div>
         <h1 class="article-title">Run OpenAI's gpt-oss locally with Lemonade</h1>
-        <div class="article-subtitle">
-          We're excited to announce that Lemonade now supports OpenAI's newly released gpt-oss models, bringing you the power to run these cutting-edge models locally on your own hardware! 🎉
+        <div class="article-subtitle" id="article-subtitle">
+          <!-- Content will be populated by JavaScript -->
         </div>
       </div>
 
@@ -155,6 +159,11 @@ lemonade-server pull gpt-oss-120b-GGUF</code></pre>
     // Initialize footer with star count (uses ../ basePath)
     document.addEventListener('DOMContentLoaded', () => {
       initializeFooter('../');
+      
+      // Populate meta tags and subtitle with the description
+      document.querySelector('meta[name="description"]').setAttribute('content', ARTICLE_DESCRIPTION);
+      document.querySelector('meta[property="og:description"]').setAttribute('content', ARTICLE_DESCRIPTION);
+      document.getElementById('article-subtitle').textContent = `We're excited to announce that ${ARTICLE_DESCRIPTION} 🎉`;
     });
   </script>
 </body>
