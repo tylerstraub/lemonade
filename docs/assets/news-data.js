@@ -1,6 +1,15 @@
 // News content data - easy to add new entries
 const newsData = [
     {
+    title: "Run OpenAI's gpt-oss locally with Lemonade",
+    url: "gpt-oss.html",
+    date: "August 5, 2025",
+    description: "Lemonade now supports OpenAI's gpt-oss models, bringing you the power to run these cutting-edge models locally on your own hardware! 🎉",
+    image: "https://raw.githubusercontent.com/lemonade-sdk/assets/refs/heads/main/docs/banner.png",
+    imageStyle: "width: 100%; height: 100%; object-fit: cover; object-position: center; transform: scale(1.1);",
+    type: "blog"
+    },
+    {
     title: "Lemonade Server & Open WebUI",
     url: "https://www.youtube.com/watch?v=yZs-Yzl736E",
     date: "July 31, 2025",
