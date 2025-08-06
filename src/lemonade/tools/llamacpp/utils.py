@@ -10,7 +10,7 @@ import requests
 import lemonade.common.printing as printing
 from lemonade.tools.adapter import PassthroughTokenizer, ModelAdapter
 
-LLAMA_VERSION = "b5902"
+LLAMA_VERSION = "b6097"
 
 
 def get_llama_folder_path():
