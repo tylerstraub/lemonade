@@ -20,6 +20,7 @@ If you get the `ImportError: cannot import name 'TypeIs' from 'typing_extensions
     2. pip install openai
 """
 
+import sys
 import asyncio
 import requests
 import numpy as np

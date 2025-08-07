@@ -844,7 +844,7 @@ def get_hip_devices():
 
     # Setup function signatures
     hipError_t = c_int
-    hipDeviceProp_t = ctypes.c_char * 1024
+    hipDeviceProp_t = ctypes.c_char * 2048
     libhip.hipGetDeviceCount.restype = hipError_t
     libhip.hipGetDeviceCount.argtypes = [POINTER(c_int)]
     libhip.hipGetDeviceProperties.restype = hipError_t
