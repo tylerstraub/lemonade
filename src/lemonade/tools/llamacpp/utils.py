@@ -873,6 +873,7 @@ def get_hip_devices():
             )
             continue
 
+        # Extract device name from HIP device properties
         device_name = ctypes.string_at(prop, 256).decode("utf-8").rstrip("\x00")
         devices.append([i, device_name])
 
