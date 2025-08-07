@@ -1025,8 +1025,8 @@
 <h3 id="3-what-are-the-use-cases-for-different-audiences">3. <strong>What are the use cases for different audiences?</strong></h3>
 <ul>
 <li><strong>End Users</strong>: Use <a href="https://github.com/amd/gaia">GAIA</a> for a Chatbot experience locally.</li>
-<li><strong>LLM Enthusiasts</strong>: Run models like LLaMA3 on Ryzen AI 300 PCs with minimal setup. See recommended apps listed <a href="https://lemonade-server.ai/docs/server/apps/">here</a>.</li>
-<li><strong>Developers</strong>: Integrate LLMs into apps using standard APIs with no AMD-specific code. See the <a href="https://lemonade-server.ai/docs/server/server_integration/">Server Integration Guide</a>.</li>
+<li><strong>LLM Enthusiasts</strong>: LLMs on your GPU or NPU with minimal setup, and connect to great apps listed <a href="https://lemonade-server.ai/docs/server/apps/">here</a>.</li>
+<li><strong>Developers</strong>: Integrate LLMs into apps using standard APIs with no device-specific code. See the <a href="https://lemonade-server.ai/docs/server/server_integration/">Server Integration Guide</a>.</li>
 </ul>
 <h2 id="installation-compatibility">Installation &amp; Compatibility</h2>
 <h3 id="1-how-do-i-install-lemonade-sdk-or-server">1. <strong>How do I install Lemonade SDK or Server?</strong></h3>
@@ -1038,7 +1038,7 @@
 <p>Yes! To install Lemonade on Linux, visit https://lemonade-server.ai/ and check the "Developer Setup" section for installation instructions. Visit the <a href="https://github.com/lemonade-sdk/lemonade?tab=readme-ov-file#supported-configurations">Supported Configurations</a> section to see the support matrix for CPU, GPU, and NPU.</p>
 <h2 id="models-performance">Models &amp; Performance</h2>
 <h3 id="1-what-models-are-supported">1. <strong>What models are supported?</strong></h3>
-<p>Lemonade supports a wide range of LLMs including LLaMA, DeepSeek, Qwen, Gemma, and Phi. Most GGUF models can also be added to Lemonade Server by users using the Model Manager interface.</p>
+<p>Lemonade supports a wide range of LLMs including LLaMA, DeepSeek, Qwen, Gemma, Phi, and gpt-oss. Most GGUF models can also be added to Lemonade Server by users using the Model Manager interface.</p>
 <p>👉 <a href="https://lemonade-server.ai/docs/server/server_models/">Supported Models List</a></p>
 <h3 id="2-how-do-i-know-what-size-model-will-work-with-my-setup">2. <strong>How do I know what size model will work with my setup?</strong></h3>
 <p>Model compatibility depends on your system's RAM, VRAM, and NPU availability. <strong>The actual file size varies significantly between models</strong> due to different quantization techniques and architectures.</p>
@@ -1055,8 +1055,7 @@
 </ul>
 <h3 id="4-is-there-a-script-or-tool-to-convert-models-to-hybrid-format">4. <strong>Is there a script or tool to convert models to hybrid format?</strong></h3>
 <p>Yes, there's a guide on preparing your models for Ryzen AI NPU:</p>
-<p>👉 <a href="https://ryzenai.docs.amd.com/en/latest/oga_model_prepare.html">Model Preparation Guide</a></p>
-<p><strong>Note</strong>: This guide is not maintained by the Lemonade team.</p>
+<p>👉 <a href="[https://ryzenai.docs.amd.com/en/latest/oga_model_prepare.html](https://github.com/lemonade-sdk/lemonade/blob/main/docs/dev_cli/finetuned_model_export.md)">Model Preparation Guide</a></p>
 <h3 id="5-whats-the-difference-between-gguf-and-onnx-models">5. <strong>What's the difference between GGUF and ONNX models?</strong></h3>
 <ul>
 <li><strong>GGUF</strong>: Used with llama.cpp backend, supports CPU and GPU via Vulkan.</li>
@@ -1075,6 +1074,7 @@
 <p>Yes! Lemonade Server exposes a <code>/stats</code> endpoint that returns performance metrics from the most recent completion request:</p>
 <div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/api/v1/stats
 </code></pre></div>
+<p>Or, you can launch <code>lemonade-server</code> with the option <code>--log-level debug</code> and that will also print out stats.</p>
 <h3 id="3-how-does-lemonades-performance-compare-to-llamacpp">3. <strong>How does Lemonade's performance compare to llama.cpp?</strong></h3>
 <p>Lemonade supports llama.cpp as a backend, so performance is similar when using the same model and quantization.</p>
 <h2 id="hybrid-npu-specific-questions">Hybrid &amp; NPU-Specific Questions</h2>
