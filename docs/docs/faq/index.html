@@ -13,6 +13,10 @@
         <link rel="canonical" href="https://lemonade-server.ai/faq/">
       
       
+        <link rel="prev" href="../server/server_integration/">
+      
+      
+        <link rel="next" href="../contribute/">
       
       
       <link rel="icon" href="../assets/favicon.ico">
@@ -20,7 +24,7 @@
     
     
       
-        <title>🍋 Lemonade SDK – FAQ - Lemonade Server Documentation</title>
+        <title>FAQ Guide - Lemonade Server Documentation</title>
       
     
     
@@ -74,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#lemonade-sdk-faq" class="md-skip">
+        <a href="#lemonade-frequently-asked-questions" class="md-skip">
           Skip to content
         </a>
       
@@ -109,7 +113,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              🍋 Lemonade SDK – FAQ
+              FAQ Guide
             
           </span>
         </div>
@@ -659,6 +663,358 @@
       
   
   
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    FAQ Guide
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    FAQ Guide
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-what-is-lemonade-sdk-and-what-does-it-include" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. What is Lemonade SDK and what does it include?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-what-is-lemonade-server-and-how-is-it-different-from-the-sdk" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. What is Lemonade Server and how is it different from the SDK?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-what-are-the-use-cases-for-different-audiences" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. What are the use cases for different audiences?
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installation-compatibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installation &amp; Compatibility
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Installation &amp; Compatibility">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-how-do-i-install-lemonade-sdk-or-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. How do I install Lemonade SDK or Server?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-which-devices-are-supported" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Which devices are supported?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-is-linux-supported" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Is Linux supported?
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#models-performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      Models &amp; Performance
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Models &amp; Performance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-what-models-are-supported" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. What models are supported?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-how-do-i-know-what-size-model-will-work-with-my-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. How do I know what size model will work with my setup?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-im-looking-for-a-model-but-its-not-listed-in-the-model-manager" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. I'm looking for a model, but it's not listed in the Model Manager.
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-is-there-a-script-or-tool-to-convert-models-to-hybrid-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Is there a script or tool to convert models to hybrid format?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-whats-the-difference-between-gguf-and-onnx-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. What's the difference between GGUF and ONNX models?
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#inference-behavior-performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      Inference Behavior &amp; Performance
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Inference Behavior &amp; Performance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-what-are-the-performance-benchmarks-that-can-be-collected-using-lemonade-sdk" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. What are the performance benchmarks that can be collected using Lemonade SDK?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-can-lemonade-print-out-stats-like-tokens-per-second" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Can Lemonade print out stats like tokens per second?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-how-does-lemonades-performance-compare-to-llamacpp" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. How does Lemonade's performance compare to llama.cpp?
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hybrid-npu-specific-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Hybrid &amp; NPU-Specific Questions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Hybrid &amp; NPU-Specific Questions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-does-hybrid-inference-with-the-npu-only-work-on-windows" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Does hybrid inference with the NPU only work on Windows?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-i-loaded-a-hybrid-model-but-the-npu-is-barely-active-is-that-expected" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. I loaded a hybrid model, but the NPU is barely active. Is that expected?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-does-lemonade-work-on-older-amd-processors-or-non-ryzen-ai-systems" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Does Lemonade work on older AMD processors or non-Ryzen AI systems?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-how-do-i-know-what-model-architectures-are-supported-by-the-npu" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. How do I know what model architectures are supported by the NPU?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-how-can-i-get-better-performance-from-the-npu" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. How can I get better performance from the NPU?
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#support-roadmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      Support &amp; Roadmap
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Support &amp; Roadmap">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-what-if-i-encounter-installation-or-runtime-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. What if I encounter installation or runtime errors?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-lemonade-is-missing-a-feature-i-really-want-what-should-i-do" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Lemonade is missing a feature I really want. What should I do?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-do-you-plan-to-share-a-roadmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Do you plan to share a roadmap?
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
   
   
     <li class="md-nav__item">
@@ -926,25 +1282,19 @@
   
 </li>
         
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#configuration-customization" class="md-nav__link">
+          <li class="md-nav__item">
+  <a href="#4-how-do-i-know-what-model-architectures-are-supported-by-the-npu" class="md-nav__link">
     <span class="md-ellipsis">
-      Configuration &amp; Customization
+      4. How do I know what model architectures are supported by the NPU?
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Configuration &amp; Customization">
-      <ul class="md-nav__list">
+</li>
         
           <li class="md-nav__item">
-  <a href="#1-what-is-the-context-length-in-lemonade-how-does-it-compare-to-ollama-or-lm-studio" class="md-nav__link">
+  <a href="#5-how-can-i-get-better-performance-from-the-npu" class="md-nav__link">
     <span class="md-ellipsis">
-      1. What is the context length in Lemonade? How does it compare to Ollama or LM Studio?
+      5. How can I get better performance from the NPU?
     </span>
   </a>
   
@@ -1016,7 +1366,7 @@
   
 
 
-<h1 id="lemonade-sdk-faq">🍋 Lemonade SDK – FAQ</h1>
+<h1 id="lemonade-frequently-asked-questions">🍋 Lemonade Frequently Asked Questions</h1>
 <h2 id="overview">Overview</h2>
 <h3 id="1-what-is-lemonade-sdk-and-what-does-it-include">1. <strong>What is Lemonade SDK and what does it include?</strong></h3>
 <p>Lemonade is an open-source SDK that provides high-level APIs, CLI tools, and a server interface to deploy and benchmark LLMs using ONNX Runtime GenAI (OGA), Hugging Face Transformers, and llama.cpp backends.</p>
@@ -1058,8 +1408,8 @@
 <p>👉 <a href="[https://ryzenai.docs.amd.com/en/latest/oga_model_prepare.html](https://github.com/lemonade-sdk/lemonade/blob/main/docs/dev_cli/finetuned_model_export.md)">Model Preparation Guide</a></p>
 <h3 id="5-whats-the-difference-between-gguf-and-onnx-models">5. <strong>What's the difference between GGUF and ONNX models?</strong></h3>
 <ul>
-<li><strong>GGUF</strong>: Used with llama.cpp backend, supports CPU and GPU via Vulkan.</li>
-<li><strong>ONNX</strong>: Used with OnnxRuntime GenAI, supports NPU/hybrid execution and iGPU via DirectML.</li>
+<li><strong>GGUF</strong>: Used with llama.cpp backend, supports CPU, and GPU via Vulkan or ROCm.</li>
+<li><strong>ONNX</strong>: Used with OnnxRuntime GenAI, supports NPU and NPU+iGPU Hybrid execution.</li>
 </ul>
 <h2 id="inference-behavior-performance">Inference Behavior &amp; Performance</h2>
 <h3 id="1-what-are-the-performance-benchmarks-that-can-be-collected-using-lemonade-sdk">1. <strong>What are the performance benchmarks that can be collected using Lemonade SDK?</strong></h3>
@@ -1096,12 +1446,18 @@
 <li><strong>Intel/NVIDIA systems</strong>: CPU inference, with GPU support if compatible drivers are available</li>
 </ul>
 <p>While you won't get NPU acceleration on non-Ryzen AI 300 systems, you can still benefit from GPU acceleration and the OpenAI-compatible API.</p>
-<h2 id="configuration-customization">Configuration &amp; Customization</h2>
-<h3 id="1-what-is-the-context-length-in-lemonade-how-does-it-compare-to-ollama-or-lm-studio">1. <strong>What is the context length in Lemonade? How does it compare to Ollama or LM Studio?</strong></h3>
+<h3 id="4-how-do-i-know-what-model-architectures-are-supported-by-the-npu">4. <strong>How do I know what model architectures are supported by the NPU?</strong></h3>
+<p>AMD publishes pre-quantized and optimized models in their Hugging Face collections:</p>
 <ul>
-<li><strong>GGUF models</strong>: Context length is the same as in llama.cpp, Ollama, or LM Studio. It depends on the model itself—e.g., 4K, 8K, or 32K tokens.</li>
-<li><strong>Hybrid models</strong>: Context length is currently limited. Each model has a rai_config.json file that specifies the context length for a given Ryzen AI SW version.</li>
+<li><a href="https://huggingface.co/collections/amd/ryzenai-15-llm-npu-models-6859846d7c13f81298990db0">Ryzen AI NPU Models</a></li>
+<li><a href="https://huggingface.co/collections/amd/ryzenai-15-llm-hybrid-models-6859a64b421b5c27e1e53899">Ryzen AI Hybrid Models</a></li>
 </ul>
+<p>To find the architecture of a specific model, click on any model in these collections and look for the "Base model" field, which will show you the underlying architecture (e.g., Llama, Qwen, Phi).</p>
+<h3 id="5-how-can-i-get-better-performance-from-the-npu">5. <strong>How can I get better performance from the NPU?</strong></h3>
+<p>Make sure that you've put the NPU in "Turbo" mode to get the best results. This is done by opening a terminal window and running the following commands:</p>
+<div class="highlight"><pre><span></span><code>cd C:\Windows\System32\AMD
+.\xrt-smi configure --pmode turbo
+</code></pre></div>
 <h2 id="support-roadmap">Support &amp; Roadmap</h2>
 <h3 id="1-what-if-i-encounter-installation-or-runtime-errors">1. <strong>What if I encounter installation or runtime errors?</strong></h3>
 <p>Check the Lemonade Server logs via the tray icon. Common issues include model compatibility or outdated versions.</p>
@@ -1141,6 +1497,44 @@
       
         <footer class="md-footer">
   
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../server/server_integration/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Integration Guide">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Integration Guide
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../contribute/" class="md-footer__link md-footer__link--next" aria-label="Next: Contribution Guide">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Contribution Guide
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
     
   
   <div class="md-footer-meta md-typeset">
