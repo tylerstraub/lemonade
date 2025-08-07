@@ -101,8 +101,8 @@ def identify_hip_id() -> str:
     if len(rocm_devices) == 0:
         rocm_devices = [hip_devices[-1]]
         logging.warning(
-            "No ROCm devices found when identifying HIP ID"
-            "Falling back to the following device: {rocm_devices[0]}"
+            "No ROCm devices found when identifying HIP ID\n"
+            f"Falling back to the following device: {rocm_devices[0]}"
         )
     elif len(rocm_devices) > 1:
         logging.warning(
