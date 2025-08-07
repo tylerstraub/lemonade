@@ -82,26 +82,34 @@ def identify_hip_id() -> str:
     Identify the HIP ID
     """
     # Get HIP devices
-    devices = get_hip_devices()
-    logging.debug(f"HIP devices found: {devices}")
+    hip_devices = get_hip_devices()
+    logging.debug(f"HIP devices found: {hip_devices}")
+    if len(hip_devices) == 0:
+        raise ValueError("No HIP devices found when identifying HIP ID")
 
     # Identify HIP devices that are compatible with our ROCm builds
     rocm_devices = []
-    for device in devices:
+    for device in hip_devices:
         device_id, device_name = device
         if identify_rocm_arch_from_name(device_name):
             rocm_devices.append([device_id, device_name])
     logging.debug(f"ROCm devices found: {rocm_devices}")
 
-    # If no ROCm devices are found, raise an error
+    # If no ROCm devices are found, use the last HIP device
+    # This might be needed in some scenarios where HIP reports generic device names
+    # Example: "AMD Radeon Graphics" for STX Halo iGPU on Ubuntu 24.04
     if len(rocm_devices) == 0:
-        raise ValueError("No ROCm devices found when identifying HIP ID")
+        rocm_devices = [hip_devices[-1]]
+        logging.warning(
+            "No ROCm devices found when identifying HIP ID"
+            "Falling back to the following device: {rocm_devices[0]}"
+        )
     elif len(rocm_devices) > 1:
         logging.warning(
             f"Multiple ROCm devices found when identifying HIP ID: {rocm_devices}"
             "The last device will be used."
         )
-    
+
     # Select the last device
     device_selected = rocm_devices[-1]
     logging.debug(f"Selected ROCm device: {device_selected}")
@@ -848,7 +856,9 @@ def get_hip_devices():
     device_count = c_int()
     err = libhip.hipGetDeviceCount(ctypes.byref(device_count))
     if err != 0:
-        logging.error("hipGetDeviceCount failed:", libhip.hipGetErrorString(err).decode())
+        logging.error(
+            "hipGetDeviceCount failed:", libhip.hipGetErrorString(err).decode()
+        )
         return []
 
     # Get device properties
