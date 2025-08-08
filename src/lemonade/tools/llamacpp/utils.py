@@ -785,24 +785,24 @@ def get_hip_devices(hip_path):
     import ctypes
     import sys
     import os
+    import glob
     from ctypes import c_int, POINTER
     from ctypes.util import find_library
 
     # Load HIP library
-    hip_library = "amdhip64_7.dll" if sys.platform.startswith('win') else "libamdhip64.so"
-    path = os.path.join(hip_path, hip_library)
-    if not path:
-        raise RuntimeError(f"Could not find HIP runtime library: {hip_library}")
-    
+    hip_library_pattern = "amdhip64*.dll" if sys.platform.startswith('win') else "libamdhip64*.so"
+    search_pattern = os.path.join(hip_path, hip_library_pattern)
+    matching_files = glob.glob(search_pattern)
+    if not matching_files:
+        raise RuntimeError(f"Could not find HIP runtime library matching pattern: {hip_library_pattern}")
     try:
-        libhip = ctypes.CDLL(path)
+        libhip = ctypes.CDLL(matching_files[0])
     except OSError:
         raise RuntimeError(f"Could not load HIP runtime library from {path}")
     
     # Setup function signatures
     hipError_t = c_int
     hipDeviceProp_t = ctypes.c_char * 1024
-    
     libhip.hipGetDeviceCount.restype = hipError_t
     libhip.hipGetDeviceCount.argtypes = [POINTER(c_int)]
     libhip.hipGetDeviceProperties.restype = hipError_t
