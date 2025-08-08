@@ -47,6 +47,7 @@ class ModelLoadError(Exception):
 
 def serve(
     port: int = None,
+    host: str = "localhost",
     log_level: str = None,
     tray: bool = False,
     use_thread: bool = False,
@@ -79,6 +80,7 @@ def serve(
     # Start the server
     server = Server(
         port=port,
+        host=host,
         log_level=log_level,
         ctx_size=ctx_size,
         tray=tray,
@@ -259,6 +261,7 @@ def delete(model_names: List[str]):
 def run(
     model_name: str,
     port: int = None,
+    host: str = "localhost",
     log_level: str = None,
     tray: bool = False,
     llamacpp_backend: str = None,
@@ -276,6 +279,7 @@ def run(
     if not server_previously_running:
         port, server_thread = serve(
             port=port,
+            host=host,
             log_level=log_level,
             tray=tray,
             use_thread=True,
@@ -292,7 +296,7 @@ def run(
     load(model_name, port)
 
     # Open the webapp with the specified model
-    url = f"http://localhost:{port}/?model={model_name}#llm-chat"
+    url = f"http://{host}:{port}/?model={model_name}#llm-chat"
     print(f"You can now chat with {model_name} at {url}")
     webbrowser.open(url)
 
@@ -441,9 +445,36 @@ def list_models():
     print(tabulate(table_data, headers=headers, tablefmt="simple"))
 
 
+def developer_entrypoint():
+    """
+    Developer entry point that starts the server with debug logging
+    Equivalent to running: lemonade-server-dev serve --log-level debug [additional args]
+
+    This function automatically prepends "serve --log-level debug" to any arguments
+    passed to the lsdev command.
+    """
+    # Save original sys.argv
+    original_argv = sys.argv.copy()
+
+    try:
+        # Take any additional arguments passed to lsdev and append them
+        # after "serve --log-level debug"
+        additional_args = sys.argv[1:] if len(sys.argv) > 1 else []
+
+        # Set sys.argv to simulate "serve --log-level debug" + additional args
+        sys.argv = [sys.argv[0], "serve", "--log-level", "debug"] + additional_args
+        main()
+    finally:
+        # Restore original sys.argv
+        sys.argv = original_argv
+
+
 def _add_server_arguments(parser):
     """Add common server arguments to a parser"""
     parser.add_argument("--port", type=int, help="Port number to serve on")
+    parser.add_argument(
+        "--host", type=str, help="Address to bind for connections", default="localhost"
+    )
     parser.add_argument(
         "--log-level",
         type=str,
@@ -579,6 +610,7 @@ def main():
             sys.exit(ExitCodes.SERVER_ALREADY_RUNNING)
         serve(
             port=args.port,
+            host=args.host,
             log_level=args.log_level,
             tray=not args.no_tray,
             llamacpp_backend=args.llamacpp,
@@ -604,6 +636,7 @@ def main():
         run(
             args.model,
             port=args.port,
+            host=args.host,
             log_level=args.log_level,
             tray=not args.no_tray,
             llamacpp_backend=args.llamacpp,
