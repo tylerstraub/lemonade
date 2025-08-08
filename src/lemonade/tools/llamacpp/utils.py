@@ -778,3 +778,56 @@ class LlamaCppAdapter(ModelAdapter):
             error_msg = f"Failed to run llama.cpp command: {str(e)}\n"
             error_msg += f"Command: {' '.join(cmd)}"
             raise Exception(error_msg)
+
+
+def get_hip_devices(hip_path):
+    """Get list of HIP devices with their IDs and names."""
+    import ctypes
+    import sys
+    import os
+    from ctypes import c_int, POINTER
+    from ctypes.util import find_library
+
+    # Load HIP library
+    hip_library = "amdhip64_7.dll" if sys.platform.startswith('win') else "libamdhip64.so"
+    path = os.path.join(hip_path, hip_library)
+    if not path:
+        raise RuntimeError(f"Could not find HIP runtime library: {hip_library}")
+    
+    try:
+        libhip = ctypes.CDLL(path)
+    except OSError:
+        raise RuntimeError(f"Could not load HIP runtime library from {path}")
+    
+    # Setup function signatures
+    hipError_t = c_int
+    hipDeviceProp_t = ctypes.c_char * 1024
+    
+    libhip.hipGetDeviceCount.restype = hipError_t
+    libhip.hipGetDeviceCount.argtypes = [POINTER(c_int)]
+    libhip.hipGetDeviceProperties.restype = hipError_t
+    libhip.hipGetDeviceProperties.argtypes = [POINTER(hipDeviceProp_t), c_int]
+    libhip.hipGetErrorString.restype = ctypes.c_char_p
+    libhip.hipGetErrorString.argtypes = [hipError_t]
+    
+    # Get device count
+    device_count = c_int()
+    err = libhip.hipGetDeviceCount(ctypes.byref(device_count))
+    if err != 0:
+        print("hipGetDeviceCount failed:", libhip.hipGetErrorString(err).decode())
+        return []
+    
+    # Get device properties
+    devices = []
+    for i in range(device_count.value):
+        prop = hipDeviceProp_t()
+        err = libhip.hipGetDeviceProperties(ctypes.byref(prop), i)
+        if err != 0:
+            print(f"hipGetDeviceProperties failed for device {i}:",
+                  libhip.hipGetErrorString(err).decode())
+            continue
+        
+        device_name = ctypes.string_at(prop, 256).decode('utf-8').rstrip('\x00')
+        devices.append([i, device_name])
+    
+    return devices
