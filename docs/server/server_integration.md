@@ -2,7 +2,7 @@
 
 This guide provides instructions on how to integrate Lemonade Server into your application.
 
-There are two main ways in which Lemonade Sever might integrate into apps:
+There are two main ways in which Lemonade Server might integrate into apps:
 
 * User-Managed Server: User is responsible for installing and managing Lemonade Server.
 * App-Managed Server: App is responsible for installing and managing Lemonade Server on behalf of the user.
@@ -114,6 +114,11 @@ You can also prevent the server from showing a system tray icon by using the `--
 ```bash
 lemonade-server serve --no-tray
 ```
+
+The server can also read its host, port, log level, Llama.cpp backend, and context
+size from environment variables. Set `LEMONADE_HOST`, `LEMONADE_PORT`,
+`LEMONADE_LOG_LEVEL`, `LEMONADE_LLAMACPP`, or `LEMONADE_CTX_SIZE` before launching
+`lemonade-server` to override the default settings without editing the startup script.
 
 You can also run the server as a background process using a subprocess or any preferred method.
 

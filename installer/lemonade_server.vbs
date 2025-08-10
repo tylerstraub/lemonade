@@ -1,4 +1,4 @@
-' This script detects wheter we are in headless mode and launches lemonade-server
+' This script detects whether we are in headless mode and launches lemonade-server
 ' either in headless mode or with a system tray icon.
 
 Set wshShell = CreateObject("WScript.Shell")

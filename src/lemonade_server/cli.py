@@ -1,9 +1,15 @@
 import argparse
 import sys
 import os
-from typing import Tuple, Optional
+from typing import Tuple, Optional, List
 import psutil
-from typing import List
+
+
+def _env_int(name: str) -> Optional[int]:
+    try:
+        return int(os.getenv(name))
+    except (TypeError, ValueError):
+        return None
 
 
 # Error codes for different CLI scenarios
@@ -286,8 +292,6 @@ def run(
             llamacpp_backend=llamacpp_backend,
             ctx_size=ctx_size,
         )
-    else:
-        port = running_port
 
     # Pull model
     pull([model_name])
@@ -471,26 +475,36 @@ def developer_entrypoint():
 
 def _add_server_arguments(parser):
     """Add common server arguments to a parser"""
-    parser.add_argument("--port", type=int, help="Port number to serve on")
     parser.add_argument(
-        "--host", type=str, help="Address to bind for connections", default="localhost"
+        "--port",
+        type=int,
+        default=_env_int("LEMONADE_PORT"),
+        help="Port number to serve on",
+    )
+    parser.add_argument(
+        "--host",
+        type=str,
+        default=os.getenv("LEMONADE_HOST", "localhost"),
+        help="Address to bind for connections",
     )
     parser.add_argument(
         "--log-level",
         type=str,
-        help="Log level for the server",
         choices=["critical", "error", "warning", "info", "debug", "trace"],
-        default="info",
+        default=os.getenv("LEMONADE_LOG_LEVEL", "info"),
+        help="Log level for the server",
     )
     parser.add_argument(
         "--llamacpp",
         type=str,
-        help=f"LlamaCpp backend to use",
         choices=["vulkan", "rocm"],
+        default=os.getenv("LEMONADE_LLAMACPP"),
+        help="LlamaCpp backend to use",
     )
     parser.add_argument(
         "--ctx-size",
         type=int,
+        default=_env_int("LEMONADE_CTX_SIZE"),
         help="Context size for the model (default: 4096 for llamacpp, truncates prompts for other recipes)",
     )
 
