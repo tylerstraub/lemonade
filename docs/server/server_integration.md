@@ -115,10 +115,10 @@ You can also prevent the server from showing a system tray icon by using the `--
 lemonade-server serve --no-tray
 ```
 
-On Windows installations created with the Lemonade installer, the server can also read
-its host, port, log level, Llama.cpp backend, and context size from environment
-variables. Set `LEMONADE_HOST`, `LEMONADE_PORT`, `LEMONADE_LOG_LEVEL`,
-`LEMONADE_LLAMACPP`, or `LEMONADE_CTX_SIZE` before launching `lemonade-server` to
+Regardless of how Lemonade Server is installed or launched, it can read its host,
+port, log level, Llama.cpp backend, and context size from environment variables.
+Set `LEMONADE_HOST`, `LEMONADE_PORT`, `LEMONADE_LOG_LEVEL`, `LEMONADE_LLAMACPP`,
+or `LEMONADE_CTX_SIZE` before launching `lemonade-server` by any method to
 override the default settings without editing the startup script.
 
 You can also run the server as a background process using a subprocess or any preferred method.
