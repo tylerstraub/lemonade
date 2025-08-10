@@ -8,35 +8,8 @@ scriptDir = fso.GetParentFolderName(WScript.ScriptFullName)
 
 ' Declare headless variable
 Dim HEADLESS
-
-' Build argument list from optional environment variables
-Dim args, host, port, logLevel, llamaBackend, ctxSize
+Dim args
 args = " serve"
-
-host = wshShell.ExpandEnvironmentStrings("%LEMONADE_HOST%")
-If host <> "%LEMONADE_HOST%" And host <> "" Then
-    args = args & " --host """ & host & """"
-End If
-
-port = wshShell.ExpandEnvironmentStrings("%LEMONADE_PORT%")
-If port <> "%LEMONADE_PORT%" And port <> "" Then
-    args = args & " --port " & port
-End If
-
-logLevel = wshShell.ExpandEnvironmentStrings("%LEMONADE_LOG_LEVEL%")
-If logLevel <> "%LEMONADE_LOG_LEVEL%" And logLevel <> "" Then
-    args = args & " --log-level """ & logLevel & """"
-End If
-
-llamaBackend = wshShell.ExpandEnvironmentStrings("%LEMONADE_LLAMACPP%")
-If llamaBackend <> "%LEMONADE_LLAMACPP%" And llamaBackend <> "" Then
-    args = args & " --llamacpp """ & llamaBackend & """"
-End If
-
-ctxSize = wshShell.ExpandEnvironmentStrings("%LEMONADE_CTX_SIZE%")
-If ctxSize <> "%LEMONADE_CTX_SIZE%" And ctxSize <> "" Then
-    args = args & " --ctx-size " & ctxSize
-End If
 
 ' Simple GUI detection: check if system tray is available
 On Error Resume Next
@@ -76,3 +49,4 @@ Else
         wshShell.Run """" & scriptDir & "\lemonade-server.bat""" & args, 0, False
     End If
 End If
+
