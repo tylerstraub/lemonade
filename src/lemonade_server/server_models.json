@@ -322,7 +322,7 @@
     "GLM-4.5-Air-UD-Q4K-XL-GGUF": {
         "checkpoint": "unsloth/GLM-4.5-Air-GGUF:UD-Q4_K_XL",
         "recipe": "llamacpp",
-        "suggested": false,
-        "labels": ["reasoning"]
+        "suggested": true,
+        "labels": ["reasoning","hot"]
     }
 }
