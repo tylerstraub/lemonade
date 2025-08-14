@@ -232,32 +232,53 @@ class ModelManager:
         # Handle GGUF models that have the format "checkpoint:variant"
         base_checkpoint = parse_checkpoint(checkpoint)[0]
 
+        model_path = None
+        
         try:
-            # Get the local path using snapshot_download with local_files_only=True
+            # First, try to get the local path using snapshot_download with local_files_only=True
             snapshot_path = custom_snapshot_download(
                 base_checkpoint, local_files_only=True
             )
-
             # Navigate up to the model directory (parent of snapshots directory)
             model_path = os.path.dirname(os.path.dirname(snapshot_path))
 
-            # Delete the entire model directory (including all snapshots)
-            if os.path.exists(model_path):
-                shutil.rmtree(model_path)
-                print(f"Successfully deleted model {model_name} from {model_path}")
-            else:
-                raise ValueError(
-                    f"Model {model_name} not found locally at {model_path}"
-                )
-
         except Exception as e:
+            # If snapshot_download fails, try to construct the cache path manually
             if (
                 "not found in cache" in str(e).lower()
-                or "no such file" in str(e).lower()
+                or "localentrynotfounderror" in str(e).lower()
+                or "cannot find an appropriate cached snapshot" in str(e).lower()
             ):
-                raise ValueError(f"Model {model_name} is not installed locally")
+                # Construct the Hugging Face cache path manually
+                cache_home = huggingface_hub.constants.HF_HUB_CACHE
+                # Convert repo format (e.g., "unsloth/GLM-4.5-Air-GGUF") to cache format
+                repo_cache_name = base_checkpoint.replace("/", "--")
+                model_path = os.path.join(cache_home, f"models--{repo_cache_name}")
             else:
                 raise ValueError(f"Failed to delete model {model_name}: {str(e)}")
+
+        # Try to delete the model directory
+        if model_path and os.path.exists(model_path):
+            shutil.rmtree(model_path)
+            print(f"Successfully deleted model {model_name} from {model_path}")
+        elif model_path:
+            # Model directory doesn't exist - it was likely already manually deleted
+            print(f"Model {model_name} directory not found at {model_path} - may have been manually deleted")
+            # Check if model is registered in user_models.json and remove it
+            if model_name.startswith("user.") and os.path.exists(USER_MODELS_FILE):
+                with open(USER_MODELS_FILE, "r", encoding="utf-8") as file:
+                    user_models = json.load(file)
+                
+                # Remove the "user." prefix to get the actual model name in the file
+                base_model_name = model_name[5:]  # Remove "user." prefix
+                
+                if base_model_name in user_models:
+                    del user_models[base_model_name]
+                    with open(USER_MODELS_FILE, "w", encoding="utf-8") as file:
+                        json.dump(user_models, file)
+                    print(f"Removed {model_name} from user models registry")
+        else:
+            raise ValueError(f"Unable to determine cache path for model {model_name}")
 
 
 # This file was originally licensed under Apache 2.0. It has been modified.
