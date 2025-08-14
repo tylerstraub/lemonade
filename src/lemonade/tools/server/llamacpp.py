@@ -14,6 +14,19 @@ from fastapi.responses import StreamingResponse
 
 from openai import OpenAI
 
+try:
+    from openai_harmony import (
+        Author as HarmonyAuthor,
+        Conversation as HarmonyConversation,
+        Message as HarmonyMessage,
+        Role as HarmonyRole,
+        TextContent as HarmonyTextContent,
+        load_harmony_encoding,
+    )
+except Exception:  # pragma: no cover - optional dependency
+    HarmonyAuthor = HarmonyConversation = HarmonyMessage = HarmonyRole = HarmonyTextContent = None  # type: ignore
+    load_harmony_encoding = None  # type: ignore
+
 from lemonade_server.pydantic_models import (
     ChatCompletionRequest,
     CompletionRequest,
@@ -107,6 +120,62 @@ def _separate_openai_params(request_dict: dict, endpoint_type: str = "chat") -> 
         openai_client_params["extra_body"] = extra_params
 
     return openai_client_params
+
+
+def _render_harmony_prompt(messages: list[dict]) -> str:
+    """Render a chat conversation into a prompt using Harmony.
+
+    Args:
+        messages: List of OpenAI-style message dictionaries.
+
+    Returns:
+        A string prompt rendered according to the Harmony template.
+
+    Raises:
+        HTTPException: If the Harmony library is unavailable or inputs are invalid.
+    """
+
+    if load_harmony_encoding is None or HarmonyConversation is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Harmony prompt renderer is not available",
+        )
+
+    harmony_messages: list[HarmonyMessage] = []
+    for msg in messages:
+        try:
+            role = HarmonyRole(msg.get("role", ""))
+        except ValueError as exc:  # pragma: no cover - validation
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Unknown role: {msg.get('role')}",
+            ) from exc
+
+        raw_content = msg.get("content", "")
+        contents: list[HarmonyTextContent] = []
+        if isinstance(raw_content, str):
+            contents.append(HarmonyTextContent(text=raw_content))
+        elif isinstance(raw_content, list):
+            for part in raw_content:
+                if isinstance(part, dict) and part.get("type") == "text":
+                    contents.append(
+                        HarmonyTextContent(text=part.get("text", ""))
+                    )
+                else:  # Fallback to str representation
+                    contents.append(HarmonyTextContent(text=str(part)))
+        elif isinstance(raw_content, dict) and raw_content.get("type") == "text":
+            contents.append(HarmonyTextContent(text=raw_content.get("text", "")))
+        else:
+            contents.append(HarmonyTextContent(text=str(raw_content)))
+
+        harmony_messages.append(
+            HarmonyMessage(author=HarmonyAuthor(role=role), content=contents)
+        )
+
+    conversation = HarmonyConversation.from_messages(harmony_messages)
+    encoding = load_harmony_encoding("HarmonyGptOss")
+    tokens = encoding.render_conversation_for_completion(conversation, HarmonyRole.ASSISTANT)
+    return encoding.decode(tokens)
 
 
 class LlamaTelemetry:
@@ -306,17 +375,30 @@ def _launch_llama_subprocess(
     # by other functions
     telemetry.choose_port()
 
-    # Add port and jinja to enable tool use
-    base_command.extend(["--port", str(telemetry.port), "--jinja"])
+    # Determine which prompt renderer to use
+    prompt_renderer = os.getenv("LEMONADE_PROMPT_RENDERER", "jinja").lower()
 
-    # Disable jinja for gpt-oss-120b on Vulkan
-    if backend == "vulkan" and "gpt-oss-120b" in snapshot_files["variant"].lower():
-        base_command.remove("--jinja")
+    # Add port and optionally enable jinja templating
+    base_command.extend(["--port", str(telemetry.port)])
+    if prompt_renderer != "harmony":
+        base_command.append("--jinja")
+
+    # Disable jinja for gpt-oss-120b on Vulkan due to known bug
+    if (
+        prompt_renderer != "harmony"
+        and backend == "vulkan"
+        and "gpt-oss-120b" in snapshot_files["variant"].lower()
+    ):
+        if "--jinja" in base_command:
+            base_command.remove("--jinja")
         logging.warning(
             "Jinja is disabled for gpt-oss-120b on Vulkan due to a llama.cpp bug "
             "(see https://github.com/ggml-org/llama.cpp/issues/15274). "
             "The model cannot use tools. If needed, use the ROCm backend instead."
         )
+
+    if prompt_renderer == "harmony":
+        logging.info("Using Harmony prompt renderer; jinja templating disabled")
 
     # Use legacy reasoning formatting, since not all apps support the new
     # reasoning_content field
@@ -463,6 +545,15 @@ def chat_completion(
     request_dict = chat_completion_request.model_dump(
         exclude_unset=True, exclude_none=True
     )
+
+    # If Harmony renderer is requested, convert messages to a prompt
+    if os.getenv("LEMONADE_PROMPT_RENDERER", "jinja").lower() == "harmony":
+        prompt = _render_harmony_prompt(chat_completion_request.messages)
+        completion_payload = request_dict.copy()
+        completion_payload.pop("messages", None)
+        completion_payload["prompt"] = prompt
+        completion_request = CompletionRequest(**completion_payload)
+        return completion(completion_request, telemetry)
 
     # Separate standard OpenAI parameters from custom llama.cpp parameters
     openai_client_params = _separate_openai_params(request_dict, "chat")
