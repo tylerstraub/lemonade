@@ -45,6 +45,7 @@ setup(
         "openai>=1.81.0,<1.97.1",
         "transformers<=4.53.2",
         "jinja2",
+        "openai-harmony",
         "tabulate",
         "sentencepiece",
         "huggingface-hub[hf_xet]==0.33.0",
