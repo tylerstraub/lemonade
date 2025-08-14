@@ -311,13 +311,13 @@
         "checkpoint": "unsloth/gpt-oss-120b-GGUF:Q4_K_M",
         "recipe": "llamacpp",
         "suggested": true,
-        "labels": ["hot", "reasoning"]
+        "labels": ["hot", "reasoning", "gpt-oss"]
     },
     "gpt-oss-20b-GGUF": {
         "checkpoint": "unsloth/gpt-oss-20b-GGUF:Q4_K_M",
         "recipe": "llamacpp",
         "suggested": true,
-        "labels": ["hot", "reasoning"]
+        "labels": ["hot", "reasoning", "gpt-oss"]
     },
     "GLM-4.5-Air-UD-Q4K-XL-GGUF": {
         "checkpoint": "unsloth/GLM-4.5-Air-GGUF:UD-Q4_K_XL",

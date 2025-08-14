@@ -51,6 +51,7 @@ import lemonade.tools.server.llamacpp as llamacpp
 from lemonade.tools.server.tool_calls import extract_tool_calls, get_tool_call_pattern
 from lemonade.tools.server.webapp import get_webapp_html
 from lemonade.tools.server.utils.port import lifespan
+from lemonade.tools.server.harmony import HarmonyFormatter, should_use_harmony
 
 from lemonade_server.model_manager import ModelManager
 from lemonade_server.pydantic_models import (
@@ -235,6 +236,9 @@ class Server:
 
         # Telemetry instance for llama server
         self.llama_telemetry = llamacpp.LlamaTelemetry()
+        
+        # Harmony formatter for GPT-OSS models
+        self.harmony_formatter = HarmonyFormatter()
 
     def setup_routes(self, api_prefixes: list[str]):
         for prefix in api_prefixes:
@@ -883,9 +887,38 @@ class Server:
     ):
         """
         Apply the model's chat template to the messages.
+        
+        For GPT-OSS models, this may use OpenAI's Harmony format instead of
+        the standard jinja templating for improved compatibility.
         """
+        # Check if we should use Harmony formatting for GPT-OSS models
+        if self.llm_loaded and should_use_harmony(
+            self.llm_loaded.__dict__, 
+            self.llamacpp_backend, 
+            self.harmony_formatter
+        ):
+            try:
+                # Use Harmony formatting
+                logging.info(f"🎯 Using Harmony formatting for {self.llm_loaded.model_name} (GPT-OSS model)")
+                prefill_ids = self.harmony_formatter.format_messages(messages, tools)
+                
+                # Convert token IDs back to text using the tokenizer
+                if hasattr(self.tokenizer, 'decode'):
+                    return self.tokenizer.decode(prefill_ids)
+                else:
+                    # Fallback for tokenizers without decode method
+                    logging.warning("Tokenizer doesn't support decode, using default template")
+                    return self._apply_default_template(messages)
+                    
+            except ImportError as e:
+                logging.warning(f"Harmony formatting not available: {e}")
+                # Fall through to standard template logic
+            except Exception as e:
+                logging.error(f"Error with Harmony formatting: {e}")
+                # Fall through to standard template logic
+        
+        # Standard template logic (existing behavior)
         if self.tokenizer.chat_template:
-
             return self.tokenizer.apply_chat_template(
                 messages,
                 tokenize=False,
@@ -894,6 +927,10 @@ class Server:
             )
 
         # Fallback to a standardized template if the model doesn't provide one
+        return self._apply_default_template(messages)
+    
+    def _apply_default_template(self, messages: list[dict]) -> str:
+        """Apply default chat template when no other template is available."""
         logging.warning("No chat template found. Using default template.")
         formatted_messages = []
         for msg in messages:

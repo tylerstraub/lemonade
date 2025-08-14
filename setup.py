@@ -77,6 +77,10 @@ setup(
             "human-eval-windows==1.0.4",
             "lm-eval[api]",
         ],
+        # GPT-OSS Harmony support for improved GPT-OSS model compatibility
+        "harmony": [
+            "openai-harmony",
+        ],
         "model-generate": [
             "model-generate==1.5.0; platform_system=='Windows' and python_version=='3.10'",
         ],

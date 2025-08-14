@@ -265,6 +265,7 @@ def _launch_llama_subprocess(
     ctx_size: int,
     supports_embeddings: bool = False,
     supports_reranking: bool = False,
+    model_config: 'PullConfig' = None,
 ) -> subprocess.Popen:
     """
     Launch llama server subprocess with appropriate configuration.
@@ -306,17 +307,70 @@ def _launch_llama_subprocess(
     # by other functions
     telemetry.choose_port()
 
-    # Add port and jinja to enable tool use
-    base_command.extend(["--port", str(telemetry.port), "--jinja"])
+    # Add port to enable server communication
+    base_command.extend(["--port", str(telemetry.port)])
 
-    # Disable jinja for gpt-oss-120b on Vulkan
-    if backend == "vulkan" and "gpt-oss-120b" in snapshot_files["variant"].lower():
-        base_command.remove("--jinja")
-        logging.warning(
-            "Jinja is disabled for gpt-oss-120b on Vulkan due to a llama.cpp bug "
-            "(see https://github.com/ggml-org/llama.cpp/issues/15274). "
-            "The model cannot use tools. If needed, use the ROCm backend instead."
-        )
+    # Conditionally add jinja flag based on model compatibility  
+    should_add_jinja = True
+    
+    # Use the tag-based system instead of complex path matching
+    if model_config:
+        logging.info(f"🔍 DEBUG: Checking jinja flag for model: {model_config.model_name}")
+        logging.info(f"🔍 DEBUG: Backend: {backend}")
+        
+        # Check if this is a GPT-OSS model that should use Harmony instead of jinja
+        from lemonade.tools.server.harmony import should_use_harmony, HarmonyFormatter
+        from lemonade_server.model_manager import ModelManager
+        
+        try:
+            # Get model information using the tag system
+            supported_models = ModelManager().supported_models
+            model_info = supported_models.get(model_config.model_name)
+            
+            if model_info:
+                logging.info(f"🔍 DEBUG: Found model info for {model_config.model_name}: {model_info}")
+                harmony_formatter = HarmonyFormatter()
+                logging.info(f"🔍 DEBUG: Harmony available: {harmony_formatter.is_available}")
+                
+                if should_use_harmony(model_info, backend, harmony_formatter):
+                    should_add_jinja = False
+                    logging.info(
+                        f"🎯 Harmony Mode: Omitting --jinja flag for {model_config.model_name} "
+                        f"on {backend} backend (will use Harmony formatting instead)"
+                    )
+                else:
+                    logging.info(f"🔍 DEBUG: should_use_harmony returned False for {model_config.model_name}")
+            else:
+                logging.info(f"🔍 DEBUG: No model info found for {model_config.model_name}")
+        
+        except Exception as e:
+            logging.error(f"🔍 DEBUG: Exception in Harmony check: {e}")
+            import traceback
+            logging.error(f"🔍 DEBUG: Traceback: {traceback.format_exc()}")
+            # Fall back to original logic if there's any issue
+            if backend == "vulkan" and "gpt-oss-120b" in snapshot_files["variant"].lower():
+                should_add_jinja = False
+                logging.warning(
+                    "Jinja is disabled for gpt-oss-120b on Vulkan due to a llama.cpp bug "
+                    "(see https://github.com/ggml-org/llama.cpp/issues/15274). "
+                    "The model cannot use tools. If needed, use the ROCm backend instead."
+                )
+    else:
+        logging.warning("🔍 DEBUG: No model_config provided, falling back to legacy logic")
+        # Fall back to original logic if no model config
+        if backend == "vulkan" and "gpt-oss-120b" in snapshot_files["variant"].lower():
+            should_add_jinja = False
+            logging.warning(
+                "Jinja is disabled for gpt-oss-120b on Vulkan due to a llama.cpp bug "
+                "(see https://github.com/ggml-org/llama.cpp/issues/15274). "
+                "The model cannot use tools. If needed, use the ROCm backend instead."
+            )
+    
+    if should_add_jinja:
+        logging.info(f"🔍 DEBUG: Adding --jinja flag to command")
+        base_command.append("--jinja")
+    else:
+        logging.info(f"🔍 DEBUG: NOT adding --jinja flag to command")
 
     # Use legacy reasoning formatting, since not all apps support the new
     # reasoning_content field
@@ -407,6 +461,7 @@ def server_load(
         ctx_size=ctx_size,
         supports_embeddings=supports_embeddings,
         supports_reranking=supports_reranking,
+        model_config=model_config,
     )
 
     # Check the /health endpoint until GPU server is ready
@@ -433,6 +488,7 @@ def server_load(
             ctx_size=ctx_size,
             supports_embeddings=supports_embeddings,
             supports_reranking=supports_reranking,
+            model_config=model_config,
         )
 
         # Check the /health endpoint until CPU server is ready
@@ -467,18 +523,75 @@ def chat_completion(
     # Separate standard OpenAI parameters from custom llama.cpp parameters
     openai_client_params = _separate_openai_params(request_dict, "chat")
 
+    # Check if we need to parse Harmony responses
+    from lemonade.tools.server.harmony import should_use_harmony, HarmonyFormatter, parse_harmony_response
+    from lemonade_server.model_manager import ModelManager
+    
+    should_parse_harmony = False
+    try:
+        # Determine if this is a Harmony-enabled GPT-OSS model
+        supported_models = ModelManager().supported_models
+        model_name = chat_completion_request.model
+        model_info = supported_models.get(model_name)
+        if model_info:
+            harmony_formatter = HarmonyFormatter()
+            # We can't easily get the backend here, so check if it's a GPT-OSS model
+            # The backend check was already done during model loading
+            should_parse_harmony = model_info and "gpt-oss" in model_info.get("labels", [])
+            logging.debug(f"🎯 Harmony response parsing enabled: {should_parse_harmony} for {model_name}")
+    except Exception as e:
+        logging.debug(f"Could not determine Harmony parsing: {e}")
+
     # Check if streaming is requested
     if chat_completion_request.stream:
 
         def event_stream():
             try:
-                # Enable streaming
-                # pylint: disable=missing-kwoa
-                for chunk in client.chat.completions.create(**openai_client_params):
-                    yield f"data: {chunk.model_dump_json()}\n\n"
+                # For Harmony models, we need to accumulate the full response before parsing
+                if should_parse_harmony:
+                    # Collect all chunks first, then transform and stream
+                    accumulated_content = ""
+                    collected_chunks = []
+                    
+                    # Collect all content
+                    for chunk in client.chat.completions.create(**openai_client_params):
+                        collected_chunks.append(chunk)
+                        if hasattr(chunk, 'choices') and chunk.choices:
+                            choice = chunk.choices[0]
+                            if hasattr(choice, 'delta') and hasattr(choice.delta, 'content') and choice.delta.content:
+                                accumulated_content += choice.delta.content
+                    
+                    # Parse the accumulated Harmony content
+                    if accumulated_content:
+                        parsed = parse_harmony_response(accumulated_content)
+                        transformed_content = parsed.get("content", accumulated_content)
+                        
+                        if transformed_content != accumulated_content:
+                            logging.info(f"🎯 Transformed Harmony streaming response")
+                            # Stream the transformed content as delta chunks
+                            for i, char in enumerate(transformed_content):
+                                # Create a new chunk with the character
+                                chunk = collected_chunks[0] if collected_chunks else None
+                                if chunk:
+                                    # Create a copy and modify it
+                                    import copy
+                                    new_chunk = copy.deepcopy(chunk)
+                                    new_chunk.choices[0].delta.content = char
+                                    yield f"data: {new_chunk.model_dump_json()}\n\n"
+                            
+                            yield "data: [DONE]\n\n"
+                            telemetry.show_telemetry()
+                            return
+                    
+                    # If no transformation needed, stream original chunks
+                    for chunk in collected_chunks:
+                        yield f"data: {chunk.model_dump_json()}\n\n"
+                else:
+                    # Normal streaming for non-Harmony models
+                    for chunk in client.chat.completions.create(**openai_client_params):
+                        yield f"data: {chunk.model_dump_json()}\n\n"
+                
                 yield "data: [DONE]\n\n"
-
-                # Show telemetry after completion
                 telemetry.show_telemetry()
 
             except Exception as e:  # pylint: disable=broad-exception-caught
@@ -498,6 +611,16 @@ def chat_completion(
             # Disable streaming for non-streaming requests
             # pylint: disable=missing-kwoa
             response = client.chat.completions.create(**openai_client_params)
+
+            # Parse Harmony content if needed
+            if should_parse_harmony and hasattr(response, 'choices') and response.choices:
+                choice = response.choices[0]
+                if hasattr(choice, 'message') and hasattr(choice.message, 'content') and choice.message.content:
+                    parsed = parse_harmony_response(choice.message.content)
+                    if parsed.get("content") != choice.message.content:
+                        # Content was transformed, update the response
+                        response.choices[0].message.content = parsed["content"]
+                        logging.info(f"🎯 Transformed Harmony content in non-streaming response")
 
             # Show telemetry after completion
             telemetry.show_telemetry()
