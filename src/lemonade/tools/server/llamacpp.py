@@ -524,7 +524,7 @@ def chat_completion(
     openai_client_params = _separate_openai_params(request_dict, "chat")
 
     # Check if we need to parse Harmony responses
-    from lemonade.tools.server.harmony import should_use_harmony, HarmonyFormatter, parse_harmony_response
+    from lemonade.tools.server.harmony import should_use_harmony, HarmonyFormatter, parse_harmony_response, HarmonyStreamingParser
     from lemonade_server.model_manager import ModelManager
     
     should_parse_harmony = False
@@ -547,54 +547,66 @@ def chat_completion(
 
         def event_stream():
             try:
-                # For Harmony models, we need to accumulate the full response before parsing
-                if should_parse_harmony:
-                    # Collect all chunks first, then transform and stream
-                    accumulated_content = ""
-                    collected_chunks = []
-                    
-                    # Collect all content
-                    for chunk in client.chat.completions.create(**openai_client_params):
-                        collected_chunks.append(chunk)
-                        if hasattr(chunk, 'choices') and chunk.choices:
-                            choice = chunk.choices[0]
-                            if hasattr(choice, 'delta') and hasattr(choice.delta, 'content') and choice.delta.content:
-                                accumulated_content += choice.delta.content
-                    
-                    # Parse the accumulated Harmony content
-                    if accumulated_content:
-                        parsed = parse_harmony_response(accumulated_content)
-                        transformed_content = parsed.get("content", accumulated_content)
-                        
-                        if transformed_content != accumulated_content:
-                            logging.info(f"🎯 Transformed Harmony streaming response")
-                            # Stream the transformed content as delta chunks
-                            for i, char in enumerate(transformed_content):
-                                # Create a new chunk with the character
-                                chunk = collected_chunks[0] if collected_chunks else None
-                                if chunk:
-                                    # Create a copy and modify it
-                                    import copy
-                                    new_chunk = copy.deepcopy(chunk)
-                                    new_chunk.choices[0].delta.content = char
-                                    yield f"data: {new_chunk.model_dump_json()}\n\n"
+                # Initialize streaming parser for Harmony models
+                harmony_parser = HarmonyStreamingParser() if should_parse_harmony else None
+                
+                # Stream chunks in real-time
+                for chunk in client.chat.completions.create(**openai_client_params):
+                    if should_parse_harmony and harmony_parser and hasattr(chunk, 'choices') and chunk.choices:
+                        choice = chunk.choices[0]
+                        if hasattr(choice, 'delta') and hasattr(choice.delta, 'content') and choice.delta.content:
+                            # Parse chunk through Harmony streaming parser
+                            parsed_chunk = harmony_parser.parse_chunk(choice.delta.content)
                             
-                            yield "data: [DONE]\n\n"
-                            telemetry.show_telemetry()
-                            return
-                    
-                    # If no transformation needed, stream original chunks
-                    for chunk in collected_chunks:
+                            if parsed_chunk["content"]:
+                                # Create new chunk with transformed content
+                                import copy
+                                new_chunk = copy.deepcopy(chunk)
+                                new_chunk.choices[0].delta.content = parsed_chunk["content"]
+                                yield f"data: {new_chunk.model_dump_json()}\n\n"
+                                logging.debug(f"🎯 Streamed Harmony {parsed_chunk['type']} content: {len(parsed_chunk['content'])} chars")
+                            
+                            # Check for pending outputs from the same chunk
+                            while harmony_parser.has_pending_outputs():
+                                pending_chunk = harmony_parser.parse_chunk("")  # Empty string to get pending
+                                if pending_chunk["content"]:
+                                    new_chunk = copy.deepcopy(chunk)
+                                    new_chunk.choices[0].delta.content = pending_chunk["content"]
+                                    yield f"data: {new_chunk.model_dump_json()}\n\n"
+                                    logging.debug(f"🎯 Streamed pending Harmony {pending_chunk['type']} content: {len(pending_chunk['content'])} chars")
+                            # If no content ready, continue to next chunk
+                        else:
+                            # No content in this chunk, stream as-is
+                            yield f"data: {chunk.model_dump_json()}\n\n"
+                    else:
+                        # Normal streaming for non-Harmony models or chunks without content
                         yield f"data: {chunk.model_dump_json()}\n\n"
-                else:
-                    # Normal streaming for non-Harmony models
-                    for chunk in client.chat.completions.create(**openai_client_params):
-                        yield f"data: {chunk.model_dump_json()}\n\n"
+                
+                # Finalize Harmony parsing if needed
+                if should_parse_harmony and harmony_parser:
+                    final_chunk = harmony_parser.finalize()
+                    if final_chunk["content"]:
+                        # Create a final chunk with any remaining content
+                        import json
+                        final_chunk_data = {
+                            "id": "final",
+                            "object": "chat.completion.chunk",
+                            "created": int(time.time()),
+                            "model": chat_completion_request.model,
+                            "choices": [{
+                                "index": 0,
+                                "delta": {"content": final_chunk["content"]},
+                                "finish_reason": None
+                            }]
+                        }
+                        yield f"data: {json.dumps(final_chunk_data)}\n\n"
+                        logging.debug(f"🎯 Finalized Harmony with {len(final_chunk['content'])} chars")
                 
                 yield "data: [DONE]\n\n"
                 telemetry.show_telemetry()
 
             except Exception as e:  # pylint: disable=broad-exception-caught
+                logging.error(f"Error in streaming: {e}")
                 yield f'data: {{"error": "{str(e)}"}}\n\n'
 
         return StreamingResponse(
@@ -616,10 +628,17 @@ def chat_completion(
             if should_parse_harmony and hasattr(response, 'choices') and response.choices:
                 choice = response.choices[0]
                 if hasattr(choice, 'message') and hasattr(choice.message, 'content') and choice.message.content:
-                    parsed = parse_harmony_response(choice.message.content)
-                    if parsed.get("content") != choice.message.content:
+                    # Use the new streaming parser for consistency
+                    harmony_parser = HarmonyStreamingParser()
+                    # Process the entire content at once for non-streaming
+                    parsed_chunk = harmony_parser.parse_chunk(choice.message.content)
+                    final_chunk = harmony_parser.finalize()
+                    
+                    # Combine results
+                    final_result = harmony_parser.get_final_result()
+                    if final_result.get("content") != choice.message.content:
                         # Content was transformed, update the response
-                        response.choices[0].message.content = parsed["content"]
+                        response.choices[0].message.content = final_result["content"]
                         logging.info(f"🎯 Transformed Harmony content in non-streaming response")
 
             # Show telemetry after completion

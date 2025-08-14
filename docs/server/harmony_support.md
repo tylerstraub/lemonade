@@ -18,13 +18,16 @@ Previously, Lemonade had a workaround for the gpt-oss-120b model on the Vulkan b
 - Loss of tool functionality
 - Hacky add-then-remove flag logic
 - Poor user experience
+- **Broken streaming functionality** - responses had to be fully accumulated before processing
 
-With Harmony support, Lemonade now:
+With the new Harmony streaming support, Lemonade now:
 
 - ✅ Uses the native format GPT-OSS models were trained for
 - ✅ Maintains tool functionality through Harmony's built-in support
 - ✅ Provides cleaner, more maintainable code
 - ✅ Offers better performance for GPT-OSS models
+- ✅ **Preserves real-time streaming** while parsing Harmony structure
+- ✅ **Incremental token processing** without waiting for complete responses
 
 ## Installation
 
@@ -62,6 +65,71 @@ Harmony formatting is automatically used when:
 1. **Message Processing**: `apply_chat_template()` method checks for GPT-OSS models
 2. **Flag Management**: `_launch_llama_subprocess()` conditionally omits `--jinja` flag
 3. **Template Formatting**: Harmony formatter converts OpenAI chat format to Harmony format
+4. **Streaming Parser**: Real-time `HarmonyStreamingParser` processes responses incrementally
+
+## Streaming Implementation
+
+### The Problem
+
+The original Harmony implementation broke streaming functionality because:
+
+1. **Full Response Accumulation**: All tokens had to be collected before parsing Harmony structure
+2. **Fake Streaming**: Responses were artificially streamed character-by-character after full completion
+3. **Poor User Experience**: No visible output until entire response was generated
+
+### The Solution
+
+The new `HarmonyStreamingParser` provides:
+
+#### **Real-time Channel Detection**
+```python
+# Detects channel markers as they arrive, even when split across chunks
+<|channel|>analysis<|message|>Thinking about this...
+<|channel|>final<|message|>Here's my answer...
+```
+
+#### **Incremental Content Streaming**
+- **Analysis Channel** → Streams as `<think>content</think>` format
+- **Final Channel** → Streams directly to user
+- **Unknown Content** → Passes through as raw text
+
+#### **Robust Buffer Management**
+- Handles template markers split across multiple small chunks
+- Intelligent partial marker detection and buffering
+- Preserves buffer state during channel transitions
+- Filters template decorators without breaking structure
+
+#### **State Management**
+- Tracks current channel and content state
+- Buffers only when necessary for channel transitions
+- Maintains compatibility with non-streaming responses
+
+### Usage Examples
+
+#### Streaming Response Processing
+```python
+parser = HarmonyStreamingParser()
+
+for chunk in llama_cpp_stream:
+    result = parser.parse_chunk(chunk.content)
+    if result["content"]:
+        # Stream immediately to user
+        yield result["content"]
+
+# Finalize any remaining content
+final = parser.finalize()
+if final["content"]:
+    yield final["content"]
+```
+
+#### Non-streaming Response
+```python
+parser = HarmonyStreamingParser()
+parser.parse_chunk(complete_response)
+parser.finalize()
+result = parser.get_final_result()
+return result["content"]
+```
 
 ## Supported Models
 
