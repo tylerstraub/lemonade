@@ -18,8 +18,9 @@ from threading import Thread
 import sys
 import io
 import httpx
-from server import kill_process_on_port, PORT
 from lemonade import __version__ as version_number
+
+from utils.server_base import kill_process_on_port, PORT
 
 try:
     from openai import OpenAI, AsyncOpenAI
@@ -63,25 +64,18 @@ class Testing(unittest.IsolatedAsyncioTestCase):
         # Now, start the server
         NON_DEFAULT_PORT = PORT + 1
         process = subprocess.Popen(
-            ["lemonade-server-dev", "serve", "--port", str(NON_DEFAULT_PORT)],
+            [
+                "lemonade-server-dev",
+                "serve",
+                "--port",
+                str(NON_DEFAULT_PORT),
+            ],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
         )
 
-        # Wait for the server to start by checking the port
-        start_time = time.time()
-        while True:
-            if time.time() - start_time > 60:
-                raise TimeoutError("Server failed to start within 60 seconds")
-            try:
-                conn = socket.create_connection(("localhost", NON_DEFAULT_PORT))
-                conn.close()
-                break
-            except socket.error:
-                time.sleep(1)
-
-        # Wait a few other seconds after the port is available
+        # Wait a few seconds after the port is available
         time.sleep(20)
 
         # Now, ensure we can correctly detect that the server is running
@@ -100,7 +94,7 @@ class Testing(unittest.IsolatedAsyncioTestCase):
             capture_output=True,
             text=True,
         )
-        assert result.stdout == "Lemonade Server stopped successfully.\n"
+        assert result.stdout == "Lemonade Server stopped successfully.\n", result.stdout
 
         # Ensure the server is not running
         result = subprocess.run(
@@ -108,7 +102,7 @@ class Testing(unittest.IsolatedAsyncioTestCase):
             capture_output=True,
             text=True,
         )
-        assert result.stdout == "Server is not running\n"
+        assert result.stdout == "Server is not running\n", result.stdout
 
     def test_003_system_info_command(self):
         """

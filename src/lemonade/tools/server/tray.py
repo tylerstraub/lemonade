@@ -43,7 +43,7 @@ class LemonadeTray(SystemTray):
     Lemonade-specific system tray implementation.
     """
 
-    def __init__(self, log_file, port, server_factory):
+    def __init__(self, log_file, port, server_factory, log_level="info"):
         # Find the icon path
         icon_path = Path(__file__).resolve().parents[0] / "static" / "favicon.ico"
 
@@ -58,6 +58,7 @@ class LemonadeTray(SystemTray):
         self.log_file = log_file
         self.port = port
         self.server_factory = server_factory
+        self.debug_logs_enabled = log_level == "debug"
 
         # Get current and latest version
         self.current_version = __version__
@@ -281,10 +282,26 @@ class LemonadeTray(SystemTray):
             self.logger.error(f"Error changing port: {str(e)}")
             self.show_balloon_notification("Error", f"Failed to change port: {str(e)}")
 
+    def _using_installer(self):
+        """
+        Check if the user is using the NSIS installer by checking for embeddable python
+        """
+        py_home = Path(sys.executable).parent
+        pth_file = (
+            py_home / f"python{sys.version_info.major}{sys.version_info.minor}._pth"
+        )
+        return pth_file.exists()
+
     def upgrade_to_latest(self, _, __):
         """
-        Download and launch the Lemonade Server installer
+        Download and launch the Lemonade Server installer if the user is using the NSIS installer
+        Otherwise, simply open the browser to the release page
         """
+
+        # If the user installed from source, simple open their browser to the release page
+        if not self._using_installer():
+            webbrowser.open("https://github.com/lemonade-sdk/lemonade/releases/latest")
+            return
 
         # Show notification that download is starting
         self.show_balloon_notification(
@@ -324,6 +341,26 @@ class LemonadeTray(SystemTray):
         )
 
         # No need to quit the application, the installer will handle it
+
+    def toggle_debug_logs(self, _, __):
+        """
+        Toggle debug logs on and off.
+        """
+        try:
+            new_level = "debug" if not self.debug_logs_enabled else "info"
+            response = requests.post(
+                f"http://localhost:{self.port}/api/v1/log-level",
+                json={"level": new_level},
+            )
+            response.raise_for_status()
+            self.debug_logs_enabled = not self.debug_logs_enabled
+            self.show_balloon_notification(
+                "Debug Logs",
+                f"Debug logs {'enabled' if self.debug_logs_enabled else 'disabled'}",
+            )
+        except (FileNotFoundError, ValueError) as e:
+            self.logger.error(f"Error toggling debug logs: {str(e)}")
+            self.show_balloon_notification("Error", "Failed to toggle debug logs.")
 
     def create_menu(self):
         """
@@ -401,6 +438,17 @@ class LemonadeTray(SystemTray):
 
         port_submenu = Menu(*port_menu_items)
 
+        # Create the Logs submenu
+        debug_log_text = "Enable Debug Logs"
+        debug_log_item = MenuItem(debug_log_text, self.toggle_debug_logs)
+        debug_log_item.checked = self.debug_logs_enabled
+
+        logs_submenu = Menu(
+            MenuItem("Show Logs", self.show_logs),
+            Menu.SEPARATOR,
+            debug_log_item,
+        )
+
         if status_successfully_checked:
             items.append(MenuItem("Load Model", None, submenu=load_submenu))
         items.append(MenuItem("Port", None, submenu=port_submenu))
@@ -417,7 +465,7 @@ class LemonadeTray(SystemTray):
         items.append(MenuItem("Documentation", self.open_documentation))
         items.append(MenuItem("LLM Chat", self.open_llm_chat))
         items.append(MenuItem("Model Manager", self.open_model_manager))
-        items.append(MenuItem("Show Logs", self.show_logs))
+        items.append(MenuItem("Logs", None, submenu=logs_submenu))
         items.append(Menu.SEPARATOR)
         items.append(MenuItem("Quit Lemonade", self.exit_app))
         return Menu(*items)

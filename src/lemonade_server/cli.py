@@ -11,6 +11,7 @@ from lemonade_server.pydantic_models import (
     DEFAULT_LLAMACPP_BACKEND,
     DEFAULT_CTX_SIZE,
 )
+from lemonade_server.settings import load_setting
 
 
 # Error codes for different CLI scenarios
@@ -143,8 +144,12 @@ def stop():
                 except psutil.NoSuchProcess:
                     pass  # Child already terminated
 
-        # Wait for main process
-        process.wait(timeout=10)
+        # Wait for main process to terminate gracefully
+        # kill if it doesn't terminate gracefully
+        try:
+            process.wait(timeout=5)
+        except psutil.TimeoutExpired:
+            process.kill()
 
         # Kill llama-server child process if it didn't terminate gracefully
         for child in children:
@@ -390,12 +395,7 @@ def get_server_info() -> Tuple[int | None, int | None]:
         connections = psutil.net_connections(kind="tcp4")
 
         for conn in connections:
-            if (
-                conn.status == "LISTEN"
-                and conn.laddr
-                and conn.laddr.ip in ["127.0.0.1"]
-                and conn.pid is not None
-            ):
+            if conn.status == "LISTEN" and conn.laddr and conn.pid is not None:
                 if is_lemonade_server(conn.pid):
                     return conn.pid, conn.laddr.port
 
@@ -472,6 +472,9 @@ def developer_entrypoint():
 def _add_server_arguments(parser):
     """Add common server arguments to a parser"""
 
+    # Load the persisted log level to use as a default
+    persisted_log_level = load_setting("log_level", DEFAULT_LOG_LEVEL)
+
     parser.add_argument(
         "--port",
         type=int,
@@ -489,7 +492,7 @@ def _add_server_arguments(parser):
         type=str,
         help="Log level for the server",
         choices=["critical", "error", "warning", "info", "debug", "trace"],
-        default=DEFAULT_LOG_LEVEL,
+        default=persisted_log_level,
     )
     parser.add_argument(
         "--llamacpp",
