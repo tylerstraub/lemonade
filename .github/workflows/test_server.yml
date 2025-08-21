@@ -50,7 +50,7 @@ jobs:
       - name: Run Model Manager Tests
         shell: bash -el {0}
         run: |
-          python test/model_manager_unit.py
+          python test/model_manager.py
       - name: Run server tests (network online mode)
         shell: bash -el {0}
         run: |
