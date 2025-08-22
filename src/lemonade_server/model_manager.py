@@ -260,11 +260,16 @@ class ModelManager:
                 if os.path.exists(model_cache_dir):
                     snapshots_dir = os.path.join(model_cache_dir, "snapshots")
                     if os.path.exists(snapshots_dir):
-                        snapshot_dirs = [d for d in os.listdir(snapshots_dir)
-                                       if os.path.isdir(os.path.join(snapshots_dir, d))]
+                        snapshot_dirs = [
+                            d
+                            for d in os.listdir(snapshots_dir)
+                            if os.path.isdir(os.path.join(snapshots_dir, d))
+                        ]
                         if snapshot_dirs:
                             # Use the first (likely only) snapshot directory
-                            snapshot_path = os.path.join(snapshots_dir, snapshot_dirs[0])
+                            snapshot_path = os.path.join(
+                                snapshots_dir, snapshot_dirs[0]
+                            )
             else:
                 raise ValueError(f"Failed to delete model {model_name}: {str(e)}")
 
@@ -276,7 +281,9 @@ class ModelManager:
 
                 # Get the specific files for this variant
                 core_files, sharded_files = identify_gguf_models(
-                    base_checkpoint, variant, self.supported_models[model_name].get("mmproj", "")
+                    base_checkpoint,
+                    variant,
+                    self.supported_models[model_name].get("mmproj", ""),
                 )
                 all_variant_files = list(core_files.values()) + sharded_files
 
@@ -298,19 +305,29 @@ class ModelManager:
                     print(f"No variant files found for {variant} in {snapshot_path}")
 
                 # Check if the snapshot directory is now empty (only containing .gitattributes, README, etc.)
-                remaining_files = [f for f in os.listdir(snapshot_path)
-                                 if f.endswith('.gguf') or os.path.isdir(os.path.join(snapshot_path, f))]
+                remaining_files = [
+                    f
+                    for f in os.listdir(snapshot_path)
+                    if f.endswith(".gguf")
+                    or os.path.isdir(os.path.join(snapshot_path, f))
+                ]
 
                 # If no GGUF files remain, we can delete the entire repository
                 if not remaining_files:
                     print(f"No other variants remain, deleting entire repository cache")
                     shutil.rmtree(model_cache_dir)
-                    print(f"Successfully deleted entire model cache at {model_cache_dir}")
+                    print(
+                        f"Successfully deleted entire model cache at {model_cache_dir}"
+                    )
                 else:
-                    print(f"Other variants still exist in repository, keeping cache directory")
+                    print(
+                        f"Other variants still exist in repository, keeping cache directory"
+                    )
 
             except Exception as variant_error:
-                print(f"Warning: Could not perform selective variant deletion: {variant_error}")
+                print(
+                    f"Warning: Could not perform selective variant deletion: {variant_error}"
+                )
                 print("This may indicate the files were already manually deleted")
 
         elif model_cache_dir and os.path.exists(model_cache_dir):
@@ -320,7 +337,9 @@ class ModelManager:
 
         elif model_cache_dir:
             # Model directory doesn't exist - it was likely already manually deleted
-            print(f"Model {model_name} directory not found at {model_cache_dir} - may have been manually deleted")
+            print(
+                f"Model {model_name} directory not found at {model_cache_dir} - may have been manually deleted"
+            )
 
         else:
             raise ValueError(f"Unable to determine cache path for model {model_name}")
